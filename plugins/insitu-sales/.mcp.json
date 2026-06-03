@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "insitu_sales": {
+      "title": "inSitu Sales",
+      "description": "Remote inSitu Sales MCP server.",
+      "icons": [
+        {
+          "src": "./assets/icon.png",
+          "mimeType": "image/png",
+          "sizes": [
+            "1024x1024"
+          ]
+        },
+        {
+          "src": "./assets/logo.png",
+          "mimeType": "image/png",
+          "sizes": [
+            "1024x1024"
+          ]
+        }
+      ],
+      "url": "https://api.insitusales.com/mcp"
+    }
+  }
+}

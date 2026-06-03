@@ -1,0 +1,33 @@
+{
+  "name": "insitu-sales",
+  "version": "0.1.0",
+  "description": "Connect Codex to the inSitu Sales MCP server for wholesale distribution workflows.",
+  "author": {
+    "name": "inSitu Sales",
+    "url": "https://www.insitusales.com/"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "inSitu Sales",
+    "shortDescription": "Use inSitu Sales tools for wholesale operations.",
+    "longDescription": "Founded in 2017, inSitu Sales began with a goal of simplifying sales for small and medium wholesale distributors. What started as an app for orders, routes, and invoice collection has grown into a connected platform for field sales, B2B eCommerce, inventory picking, warehouse management, and delivery dispatch. This plugin connects Codex to the inSitu Sales MCP server so teams can work with sales-system operations from Codex.",
+    "developerName": "inSitu Sales",
+    "category": "Productivity",
+    "capabilities": [
+      "MCP",
+      "Interactive"
+    ],
+    "websiteURL": "https://www.insitusales.com/",
+    "privacyPolicyURL": "https://www.insitusales.com/end-user-license-agreement",
+    "termsOfServiceURL": "https://www.insitusales.com/end-user-license-agreement",
+    "brandColor": "#2395F6",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "defaultPrompt": [
+      "Use inSitu Sales tools.",
+      "Show available inSitu Sales actions.",
+      "Help me inspect inSitu Sales data."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}

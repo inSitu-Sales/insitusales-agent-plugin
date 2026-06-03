@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "insitu_sales": {
+      "type": "http",
+      "url": "https://api.insitusales.com/mcp"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "insitu-sales",
+  "interface": {
+    "displayName": "inSitu Sales"
+  },
+  "plugins": [
+    {
+      "name": "insitu-sales",
+      "source": {
+        "source": "local",
+        "path": "./plugins/insitu-sales"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
