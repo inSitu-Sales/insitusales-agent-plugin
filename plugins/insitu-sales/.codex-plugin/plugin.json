@@ -10,7 +10,7 @@
   "interface": {
     "displayName": "inSitu Sales",
     "shortDescription": "Use inSitu Sales tools for wholesale operations.",
-    "longDescription": "Founded in 2017, inSitu Sales began with a goal of simplifying sales for small and medium wholesale distributors. What started as an app for orders, routes, and invoice collection has grown into a connected platform for field sales, B2B eCommerce, inventory picking, warehouse management, and delivery dispatch. This plugin connects Codex to the inSitu Sales MCP server so teams can work with sales-system operations from Codex.",
+    "longDescription": "The complete distribution platform for manufacturers and wholesalers—field sales, DSD, warehouse management, inventory control, and B2B e-commerce in one solution.",
     "developerName": "inSitu Sales",
     "category": "Productivity",
     "capabilities": [
@@ -24,9 +24,8 @@
     "composerIcon": "./assets/icon.png",
     "logo": "./assets/logo.png",
     "defaultPrompt": [
-      "Use inSitu Sales tools.",
-      "Show available inSitu Sales actions.",
-      "Help me inspect inSitu Sales data."
+      "Show me today’s invoices",
+      "What were my top-selling products last week?"
     ]
   },
   "mcpServers": "./.mcp.json"
