@@ -1,6 +1,6 @@
 # inSitu Sales Agent Plugin
 
-This repository contains the inSitu Sales plugin and MCP configuration for Codex and Claude.
+This repository contains the inSitu Sales plugin and MCP configuration for Codex and Claude Code.
 
 The plugin connects agents to the inSitu Sales MCP server:
 
@@ -19,7 +19,14 @@ codex plugin marketplace add /path/to/insitusales-agent-plugin
 codex plugin add insitu-sales@insitu-sales
 ```
 
-For Claude Code or other MCP clients, add the MCP server directly:
+For Claude Code, register this repository as a plugin marketplace and install the inSitu Sales plugin:
+
+```bash
+claude plugin marketplace add /path/to/insitusales-agent-plugin
+claude plugin install insitu-sales@insitu-sales
+```
+
+For other MCP clients, add the MCP server directly:
 
 ```bash
 claude mcp add --transport http insitu_sales https://api.insitusales.com/mcp
@@ -40,7 +47,22 @@ After installing, start a new Codex thread so the plugin tools are loaded.
 
 ## Install In Claude Code
 
-Claude Code can read the shared project MCP config from `.mcp.json`.
+Claude Code can install this repository as a plugin marketplace from `.claude-plugin/marketplace.json`.
+
+Clone this repository, then register and install the plugin:
+
+```bash
+claude plugin marketplace add /path/to/insitusales-agent-plugin
+claude plugin install insitu-sales@insitu-sales
+```
+
+Reload plugins or start a new Claude Code session after installing:
+
+```text
+/reload-plugins
+```
+
+Claude Code can also read the shared project MCP config from `.mcp.json`.
 
 Clone this repository, then start Claude Code from the repository root:
 
@@ -80,7 +102,9 @@ claude mcp get insitu_sales
 
 ```text
 .mcp.json
+.claude-plugin/marketplace.json
 .agents/plugins/marketplace.json
+plugins/insitu-sales/.claude-plugin/plugin.json
 plugins/insitu-sales/.codex-plugin/plugin.json
 plugins/insitu-sales/.mcp.json
 plugins/insitu-sales/assets/

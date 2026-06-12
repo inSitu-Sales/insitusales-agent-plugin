@@ -1,0 +1,24 @@
+{
+  "name": "insitu-sales",
+  "description": "Claude Code marketplace for inSitu Sales wholesale distribution tools.",
+  "metadata": {
+    "description": "Claude Code marketplace for inSitu Sales wholesale distribution tools."
+  },
+  "owner": {
+    "name": "inSitu Sales",
+    "url": "https://www.insitusales.com/"
+  },
+  "plugins": [
+    {
+      "name": "insitu-sales",
+      "source": "./plugins/insitu-sales",
+      "description": "Connect Claude Code to inSitu Sales tools for wholesale operations.",
+      "version": "0.1.0",
+      "author": {
+        "name": "inSitu Sales",
+        "url": "https://www.insitusales.com/"
+      },
+      "mcpServers": "./.mcp.json"
+    }
+  ]
+}

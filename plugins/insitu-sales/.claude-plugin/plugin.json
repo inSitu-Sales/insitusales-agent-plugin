@@ -1,0 +1,11 @@
+{
+  "name": "insitu-sales",
+  "description": "Connect Claude Code to the inSitu Sales MCP server for wholesale distribution workflows.",
+  "version": "0.1.0",
+  "author": {
+    "name": "inSitu Sales",
+    "url": "https://www.insitusales.com/"
+  },
+  "homepage": "https://www.insitusales.com/",
+  "license": "MIT"
+}
