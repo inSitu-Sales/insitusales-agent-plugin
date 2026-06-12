@@ -112,7 +112,7 @@ plugins/insitu-sales/assets/
 
 ## Legal
 
-Privacy policy and terms of service are available at:
+Privacy policy and terms are available at:
 
 ```text
 https://www.insitusales.com/end-user-license-agreement
