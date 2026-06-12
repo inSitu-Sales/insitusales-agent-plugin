@@ -2,7 +2,8 @@
   "name": "insitu-sales",
   "description": "Claude Code marketplace for inSitu Sales wholesale distribution tools.",
   "metadata": {
-    "description": "Claude Code marketplace for inSitu Sales wholesale distribution tools."
+    "description": "Claude Code marketplace for inSitu Sales wholesale distribution tools.",
+    "logo": "./plugins/insitu-sales/assets/logo.png"
   },
   "owner": {
     "name": "inSitu Sales",
