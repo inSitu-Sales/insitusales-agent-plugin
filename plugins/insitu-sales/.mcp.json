@@ -3,6 +3,7 @@
     "insitu_sales": {
       "title": "inSitu Sales",
       "description": "Remote inSitu Sales MCP server.",
+      "type": "http",
       "icons": [
         {
           "src": "./assets/icon.png",
