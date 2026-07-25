@@ -8,6 +8,32 @@ The plugin connects agents to the inSitu Sales MCP server:
 https://api.insitusales.com/mcp
 ```
 
+## Install In Claude / Cowork (for inSitu Sales customers)
+
+Customers connecting their own inSitu Sales data don't need to clone this repository or use a CLI. Any paid Claude plan (Pro, Max, Team, or Enterprise) can add it directly from the app:
+
+1. Open **Customize** (in the left sidebar, or under the **Cowork** tab in Claude Cowork) and go to the **Plugins** tab.
+2. In the **Personal plugins** section, click the **+** button and choose **Add marketplace**.
+3. Select **Add from a repository** and enter:
+
+   ```text
+   inSitu-Sales/insitusales-agent-plugin
+   ```
+
+4. Once the marketplace loads, click **Install** on the **inSitu Sales** plugin.
+5. When prompted, authenticate with your inSitu Sales credentials. The connection may show as failed or disconnected until you complete sign-in — this is expected, since the MCP server requires OAuth.
+
+After installing, the inSitu Sales skills and MCP tools are available in chat and in Cowork.
+
+<!--
+Maintainers: this repository must stay public for the flow above to work.
+Customers add the marketplace directly from the GitHub repo, and Claude/Cowork's
+"Add from a repository" and community-marketplace submission paths both require
+a public repo. Making this repo private restricts it to internal, org-admin-managed
+distribution only (see "Manage plugins for your organization" in the Claude Help Center)
+and breaks self-service install for customers.
+-->
+
 ## Agent Instructions
 
 When helping a user install this plugin, use the plugin marketplace flow when the client supports plugins.
