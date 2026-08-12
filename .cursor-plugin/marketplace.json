@@ -1,0 +1,29 @@
+{
+  "name": "insitu-sales",
+  "owner": {
+    "name": "inSitu Sales"
+  },
+  "metadata": {
+    "description": "Cursor marketplace for inSitu Sales wholesale distribution tools.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "insitu-sales",
+      "source": "./plugins/insitu-sales",
+      "description": "Connect Cursor to inSitu Sales tools for wholesale operations.",
+      "version": "0.1.0",
+      "homepage": "https://www.insitusales.com/",
+      "repository": "https://github.com/inSitu-Sales/insitusales-agent-plugin",
+      "license": "Apache-2.0",
+      "category": "Productivity",
+      "tags": [
+        "wholesale",
+        "distribution",
+        "sales",
+        "inventory",
+        "mcp"
+      ]
+    }
+  ]
+}

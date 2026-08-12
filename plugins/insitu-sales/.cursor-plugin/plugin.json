@@ -1,0 +1,22 @@
+{
+  "name": "insitu-sales",
+  "displayName": "inSitu Sales",
+  "version": "0.1.0",
+  "description": "Connect Cursor to the inSitu Sales MCP server for wholesale distribution workflows.",
+  "author": {
+    "name": "inSitu Sales"
+  },
+  "homepage": "https://www.insitusales.com/",
+  "repository": "https://github.com/inSitu-Sales/insitusales-agent-plugin",
+  "license": "Apache-2.0",
+  "keywords": [
+    "wholesale",
+    "distribution",
+    "field-sales",
+    "inventory",
+    "b2b-ecommerce",
+    "mcp"
+  ],
+  "logo": "assets/logo.png",
+  "mcpServers": "./mcp.json"
+}

@@ -1,6 +1,6 @@
 # inSitu Sales Agent Plugin
 
-This repository contains the inSitu Sales plugin and MCP configuration for Codex and Claude Code.
+This repository contains the inSitu Sales plugin and MCP configuration for Codex, Claude Code, and Cursor.
 
 The plugin connects agents to the inSitu Sales MCP server:
 
@@ -51,6 +51,8 @@ For Claude Code, register this repository as a plugin marketplace and install th
 claude plugin marketplace add /path/to/insitusales-agent-plugin
 claude plugin install insitu-sales@insitu-sales
 ```
+
+For Cursor, install the plugin from **Customize** after it is available in the public or team marketplace. During local development, load `plugins/insitu-sales` from Cursor's local plugin directory as described below.
 
 For other MCP clients, add the MCP server directly:
 
@@ -124,15 +126,40 @@ Check that Claude sees the server:
 claude mcp get insitu_sales
 ```
 
+## Install In Cursor
+
+Cursor can read this repository as a multi-plugin marketplace from `.cursor-plugin/marketplace.json`. The plugin uses Cursor's `mcp.json` format and prompts users to authenticate with their inSitu Sales credentials when the MCP server is first used.
+
+For a public Marketplace installation after the plugin is approved:
+
+1. Open **Customize** in Cursor.
+2. Search for **inSitu Sales**.
+3. Click **Install** and choose a user or project scope.
+4. Complete the inSitu Sales sign-in when prompted.
+
+Teams and Enterprise administrators can import this GitHub repository from **Dashboard → Plugins → Add Marketplace → Import from Repo**, then make the plugin available to their team.
+
+To test the plugin from a local checkout before publishing, link the plugin package into Cursor's local plugin directory:
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -s /path/to/insitusales-agent-plugin/plugins/insitu-sales ~/.cursor/plugins/local/insitu-sales
+```
+
+Restart Cursor or run **Developer: Reload Window**, then verify that **inSitu Sales** and its MCP tools appear in **Customize**. Remove an existing link before recreating it.
+
 ## Contents
 
 ```text
 .mcp.json
 .claude-plugin/marketplace.json
 .agents/plugins/marketplace.json
+.cursor-plugin/marketplace.json
 plugins/insitu-sales/.claude-plugin/plugin.json
 plugins/insitu-sales/.codex-plugin/plugin.json
+plugins/insitu-sales/.cursor-plugin/plugin.json
 plugins/insitu-sales/.mcp.json
+plugins/insitu-sales/mcp.json
 plugins/insitu-sales/assets/
 ```
 
