@@ -4,15 +4,15 @@
     "name": "inSitu Sales"
   },
   "metadata": {
-    "description": "Cursor marketplace for inSitu Sales wholesale distribution tools.",
-    "version": "0.1.0"
+    "description": "inSitu Sales enables manufacturers, wholesalers, and distributors to work with field sales, direct-store delivery, warehouse operations, inventory, customers, orders, invoices, products, and B2B e-commerce data directly from your AI agents. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
+    "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "insitu-sales",
       "source": "./plugins/insitu-sales",
-      "description": "Connect Cursor to inSitu Sales tools for wholesale operations.",
-      "version": "0.1.0",
+      "description": "inSitu Sales enables manufacturers, wholesalers, and distributors to work with field sales, direct-store delivery, warehouse operations, inventory, customers, orders, invoices, products, and B2B e-commerce data directly from your AI agents. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
+      "version": "1.0.0",
       "author": {
         "name": "inSitu Sales"
       },

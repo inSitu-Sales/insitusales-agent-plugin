@@ -1,8 +1,8 @@
 {
   "name": "insitu-sales",
-  "description": "Claude Code marketplace for inSitu Sales wholesale distribution tools.",
+  "description": "inSitu Sales enables manufacturers, wholesalers, and distributors to work with field sales, direct-store delivery, warehouse operations, inventory, customers, orders, invoices, products, and B2B e-commerce data directly from your AI agents. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
   "metadata": {
-    "description": "Claude Code marketplace for inSitu Sales wholesale distribution tools.",
+    "description": "inSitu Sales enables manufacturers, wholesalers, and distributors to work with field sales, direct-store delivery, warehouse operations, inventory, customers, orders, invoices, products, and B2B e-commerce data directly from your AI agents. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
     "logo": "./plugins/insitu-sales/assets/logo.png"
   },
   "owner": {
@@ -14,8 +14,8 @@
       "name": "insitu-sales",
       "displayName": "inSitu Sales",
       "source": "./plugins/insitu-sales",
-      "description": "Connect Claude Code to inSitu Sales tools for wholesale operations.",
-      "version": "0.1.0",
+      "description": "inSitu Sales enables manufacturers, wholesalers, and distributors to work with field sales, direct-store delivery, warehouse operations, inventory, customers, orders, invoices, products, and B2B e-commerce data directly from your AI agents. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
+      "version": "1.0.0",
       "license": "Apache-2.0",
       "author": {
         "name": "inSitu Sales",
