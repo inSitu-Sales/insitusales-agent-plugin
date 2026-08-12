@@ -4,7 +4,7 @@
   "app_info": {
     "display_name": "inSitu Sales",
     "subtitle": "Run wholesale sales operations",
-    "description": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products, review pricing, inventory, visits, orders, estimates, and invoices, generate customer statements, predict upcoming transactions, and create or update sales records through ChatGPT.",
+    "description": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products; review pricing, inventory, visits, orders, estimates, and invoices; generate customer statements; predict order recommendations; and create or update sales records through ChatGPT. It connects with ERP and accounting systems—including QuickBooks Enterprise, QuickBooks Online, Odoo, NetSuite, SAP Business One, Xero, Microsoft Dynamics 365 Business Central, and more—bringing sales and operational data together in one connected workflow.",
     "category": "BUSINESS"
   },
   "tools": {
