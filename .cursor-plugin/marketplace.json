@@ -13,9 +13,13 @@
       "source": "./plugins/insitu-sales",
       "description": "Connect Cursor to inSitu Sales tools for wholesale operations.",
       "version": "0.1.0",
+      "author": {
+        "name": "inSitu Sales"
+      },
       "homepage": "https://www.insitusales.com/",
       "repository": "https://github.com/inSitu-Sales/insitusales-agent-plugin",
       "license": "Apache-2.0",
+      "logo": "./plugins/insitu-sales/assets/logo.png",
       "category": "Productivity",
       "tags": [
         "wholesale",
