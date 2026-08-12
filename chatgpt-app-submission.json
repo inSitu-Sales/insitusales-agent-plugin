@@ -1,0 +1,464 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "inSitu Sales",
+    "subtitle": "Run wholesale sales operations",
+    "description": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products, review pricing, inventory, visits, orders, estimates, and invoices, generate customer statements, predict upcoming transactions, and create or update sales records through ChatGPT.",
+    "category": "BUSINESS"
+  },
+  "tools": {
+    "graphql_query_getAllCompany": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching company records from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllCustomer": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching customer records from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllEstimate": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching estimates from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllInvoice": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching invoices from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllMobileUser": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching mobile-user records from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllOrder": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching sales orders from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllProduct": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching product records from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllVisit": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching sales-visit records from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getAllWarehouse": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves matching warehouse records from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneCompany": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one company record from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneCustomer": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one customer record from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneEstimate": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one estimate from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneInvoice": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one invoice from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneMobileUser": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one mobile-user record from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneOrder": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one sales order from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneProduct": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one product record from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneVisit": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one sales-visit record from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getOneWarehouse": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves one warehouse record from the authenticated tenant without changing it.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_generateCustomerStatementPDF": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Generates and returns a customer statement PDF from tenant records without modifying those records.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getFormSubmissions": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves sales-rep form submissions and their answers from the authenticated tenant without changing them.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_nextOrder": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes a customer's next-order recommendation from historical tenant data without creating an order.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_nextInvoice": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes a customer's next-invoice recommendation from historical tenant data without creating an invoice.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_nextEstimate": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes a customer's next-estimate recommendation from historical tenant data without creating an estimate.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getPricedProductCatalog": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves the eligible product catalog and optional customer pricing without changing products or prices.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getProductInventory": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves inventory for a product and optional warehouse, bin, or lot filters without changing stock.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getProductInventoryForWarehouse": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves product inventory for a warehouse without changing stock.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getInventoryDetail": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves detailed inventory records for a product without changing stock.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_query_getPricing": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves effective pricing for a product and customer without changing pricing records.",
+        "open_world_justification": "Accesses only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, submit transactions, or perform irreversible actions."
+      }
+    },
+    "graphql_mutation_createOrUpdateEstimate": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new estimate or updates an existing estimate in the authenticated tenant.",
+        "open_world_justification": "Changes only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Can overwrite an existing estimate when a matching estimate or external number is supplied."
+      }
+    },
+    "graphql_mutation_createOrUpdateInvoice": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new invoice or updates an existing invoice in the authenticated tenant.",
+        "open_world_justification": "Changes only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Can overwrite an existing invoice when a matching invoice or external number is supplied."
+      }
+    },
+    "graphql_mutation_createOrUpdateOrder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new sales order or updates an existing sales order in the authenticated tenant.",
+        "open_world_justification": "Changes only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Can overwrite an existing sales order when a matching order or external number is supplied."
+      }
+    },
+    "graphql_mutation_createOrUpdateCustomer": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new customer or updates an existing customer in the authenticated tenant.",
+        "open_world_justification": "Changes only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
+        "destructive_justification": "Can overwrite an existing customer when its identifier is supplied."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Search the eligible product catalog with customer-specific pricing.",
+      "user_prompt": "Find products containing sparkling water for customer 142 and include effective pricing.",
+      "file_attachment_urls": null,
+      "tools_triggered": "graphql_query_getPricedProductCatalog",
+      "expected_output": "Returns eligible matching products with identifiers, names, and customer-specific pricing when available.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Review invoices for a bounded date range.",
+      "user_prompt": "Show my invoices from August 1 through August 7, 2026, with invoice number, customer, date, and total.",
+      "file_attachment_urls": null,
+      "tools_triggered": "graphql_query_getAllInvoice",
+      "expected_output": "Returns tenant-scoped invoices for the requested period with the requested fields and user-facing dates.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Check selected product inventory at a warehouse.",
+      "user_prompt": "Check warehouse 12 inventory for product IDs 481, 482, and 490.",
+      "file_attachment_urls": null,
+      "tools_triggered": "graphql_query_getProductInventoryForWarehouse",
+      "expected_output": "Returns current inventory records for the requested products at the selected warehouse.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Generate a customer statement for a specified period.",
+      "user_prompt": "Generate a customer statement PDF for customer 142 from July 1 through July 31, 2026.",
+      "file_attachment_urls": null,
+      "tools_triggered": "graphql_query_generateCustomerStatementPDF",
+      "expected_output": "Returns a PDF statement for the authenticated tenant and requested customer and date range.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Create a complete sales order after an explicit user request.",
+      "user_prompt": "Create a sales order for customer 142 with 3 units of product 481 at $12.50 each and 2 units of product 490 at $8.00 each.",
+      "file_attachment_urls": null,
+      "tools_triggered": "graphql_mutation_createOrUpdateOrder",
+      "expected_output": "Creates the tenant-scoped sales order from the complete header and line items and returns the saved order details.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not trigger for calendar scheduling.",
+      "user_prompt": "Schedule a team meeting for tomorrow at 10 AM.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not manage calendars or meetings.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for email composition or delivery.",
+      "user_prompt": "Email our distributor list about the new summer promotion.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not compose or send email campaigns.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for payroll administration.",
+      "user_prompt": "Increase Alex's hourly pay to $28 starting next week.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because payroll changes are outside its supported workflows.",
+      "expected_output_url": null
+    }
+  ]
+}
