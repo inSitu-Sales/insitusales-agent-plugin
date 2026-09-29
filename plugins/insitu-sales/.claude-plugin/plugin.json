@@ -1,12 +1,22 @@
 {
   "name": "insitu-sales",
   "description": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products; review pricing, inventory, visits, orders, estimates, and invoices; generate customer statements; predict order recommendations; and create or update sales records through AI assistants. It connects with ERP and accounting systems—including QuickBooks Enterprise, QuickBooks Online, Odoo, NetSuite, SAP Business One, Xero, Microsoft Dynamics 365 Business Central, and more—bringing sales and operational data together in one connected workflow. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "inSitu Sales",
     "url": "https://www.insitusales.com/"
   },
   "homepage": "https://www.insitusales.com/",
   "privacyPolicyUrl": "https://www.insitusales.com/end-user-license-agreement",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "shortDescription": "Run wholesale sales operations",
+  "keywords": [
+    "DSD",
+    "field sales",
+    "wholesale",
+    "distribution",
+    "van sales",
+    "inventory",
+    "b2b-ecommerce"
+  ]
 }

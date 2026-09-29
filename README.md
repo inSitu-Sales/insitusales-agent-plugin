@@ -160,6 +160,7 @@ plugins/insitu-sales/.codex-plugin/plugin.json
 plugins/insitu-sales/.cursor-plugin/plugin.json
 plugins/insitu-sales/.mcp.json
 plugins/insitu-sales/mcp.json
+plugins/insitu-sales/README.md
 plugins/insitu-sales/assets/
 ```
 
