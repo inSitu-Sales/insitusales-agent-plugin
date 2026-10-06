@@ -1,12 +1,13 @@
 {
   "name": "insitu-sales",
   "description": "Run field sales, van sales, and DSD operations for wholesalers and distributors: customers, pricing, inventory, orders, and invoices, connected to your ERP.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "inSitu Sales",
     "url": "https://www.insitusales.com/"
   },
   "homepage": "https://www.insitusales.com/",
+  "icon": "./assets/logo.png",
   "privacyPolicyUrl": "https://www.insitusales.com/end-user-license-agreement",
   "license": "Apache-2.0",
   "keywords": [
