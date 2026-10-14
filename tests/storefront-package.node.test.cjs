@@ -28,7 +28,7 @@ test("the Codex manifest resolves a packaged storefront skill and helper", () =>
 test("the skill checks both pilot tools before starting authoring", () => {
   const skill = fs.readFileSync(skillPath, "utf8");
   const preflight = skill
-    .split("## Check access and local capabilities\n")[1]
+    .split("## Execution and authorization guards\n")[1]
     ?.split("\n## ")[0];
   assert.ok(preflight, "access preflight is missing");
   for (const action of ["getStorefrontCompany", "authorizeStorefrontUpload"]) {
@@ -39,32 +39,53 @@ test("the skill checks both pilot tools before starting authoring", () => {
   assert.match(preflight, /stop before creating storefront files/);
   assert.match(preflight, /Node\.js/);
   assert.match(preflight, /Do not install/);
+  assert.match(preflight, /Publication is forbidden/);
+  assert.match(preflight, /Once these guards pass, call getStorefrontCompany/);
+  assert.match(
+    preflight,
+    /current administrator authority and hostname ownership/,
+  );
   assert.ok(
-    skill.indexOf("## Check access and local capabilities") <
+    skill.indexOf("## Execution and authorization guards") <
       skill.indexOf("## Confirm the storefront brief"),
   );
 });
 
 test("the package keeps buyer commerce separate from administrator authorization", () => {
   const skill = fs.readFileSync(skillPath, "utf8");
-  assert.ok(
-    skill.includes("https://api.insitusales.com/api/v1/b2b-ecommerce/graphql"),
-  );
+  assert.match(skill, /public storefront GraphQL endpoint/);
   assert.ok(skill.includes("not through MCP tools"));
   assert.ok(
     skill.includes("Never request/export the general plugin OAuth token"),
   );
   assert.ok(skill.includes("do not retry automatically"));
-  assert.ok(skill.includes("mode0600"));
+  assert.match(skill, /protected local channel/);
   assert.doesNotMatch(skill, /graphql_(query|mutation)_b2b/);
   assert.doesNotMatch(skill, /testomer|testuser@test\.com|localhost:80/);
+});
+
+test("the authoring playbook delegates API contracts to discovery", () => {
+  const skill = fs.readFileSync(skillPath, "utf8");
+  assert.match(skill, /introspection/);
+  assert.match(skill, /descriptions/);
+  assert.match(skill, /mobile and desktop/);
+  assert.match(skill, /Optional fields/);
+  assert.doesNotMatch(skill, /```|https?:\/\/|\bb2b[A-Z]\w*\b/);
+  assert.doesNotMatch(
+    skill,
+    /\b\d+\b|\b(?:fixture|testomer|httpStatus|expiresAt|unitPrice|productId|PORTAL_[A-Z_]+)\b/i,
+  );
+  assert.doesNotMatch(
+    skill,
+    /\b(?:deferred|initial workflow|test instructions|test cases)\b/i,
+  );
 });
 
 test("platform manifests and marketplace version fields agree", () => {
   const manifests = [".codex-plugin", ".claude-plugin", ".cursor-plugin"].map(
     (platform) => readJson(`plugins/insitu-sales/${platform}/plugin.json`),
   );
-  assert.equal(manifests[0].version, "1.0.5");
+  assert.match(manifests[0].version, /^\d+\.\d+\.\d+$/);
   for (const manifest of manifests)
     assert.equal(manifest.version, manifests[0].version);
   const claude = readJson(".claude-plugin/marketplace.json");
