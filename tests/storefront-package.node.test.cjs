@@ -189,6 +189,7 @@ test("all MCP configurations retain the production server", () => {
     ".mcp.json",
     "plugins/insitu-sales/.mcp.json",
     "plugins/insitu-sales/mcp.json",
+    "plugins/insitu-sales/.codex-mcp.json",
   ]) {
     assert.equal(
       readJson(file).mcpServers.insitu_sales.url,

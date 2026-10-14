@@ -28,5 +28,5 @@
       "What were my top-selling products last week?"
     ]
   },
-  "mcpServers": "./.mcp.json"
+  "mcpServers": "./.codex-mcp.json"
 }
