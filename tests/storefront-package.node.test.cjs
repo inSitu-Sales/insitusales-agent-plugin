@@ -97,6 +97,93 @@ test("platform manifests and marketplace version fields agree", () => {
   assert.equal(codex.plugins[0].source.path, "./plugins/insitu-sales");
 });
 
+test("the ChatGPT submission preserves legacy tools and includes only two authoring actions", () => {
+  const submission = readJson("chatgpt-app-submission.json");
+  const names = Object.keys(submission.tools);
+  assert.equal(names.length, 34);
+  assert.equal(
+    names.filter((name) => /^graphql_(query|mutation)_/.test(name)).length,
+    32,
+  );
+  assert.equal(
+    names.filter((name) => name.startsWith("graphql_query_")).length,
+    28,
+  );
+  assert.equal(
+    names.filter((name) => name.startsWith("graphql_mutation_")).length,
+    4,
+  );
+  assert.ok(!names.some((name) => /^graphql_(query|mutation)_b2b/.test(name)));
+  assert.deepEqual(submission.tools.getStorefrontCompany.annotations, {
+    readOnlyHint: true,
+    openWorldHint: false,
+    destructiveHint: false,
+  });
+  assert.deepEqual(submission.tools.authorizeStorefrontUpload.annotations, {
+    readOnlyHint: false,
+    openWorldHint: false,
+    destructiveHint: true,
+  });
+  for (const name of ["getStorefrontCompany", "authorizeStorefrontUpload"]) {
+    const tool = submission.tools[name];
+    for (const key of [
+      "read_only_justification",
+      "open_world_justification",
+      "destructive_justification",
+    ])
+      assert.ok(tool.justifications[key]?.length);
+    assert.ok(
+      submission.test_cases.some(
+        (scenario) => scenario.tools_triggered === name,
+      ),
+    );
+  }
+  const authorization = submission.test_cases.find(
+    (scenario) => scenario.tools_triggered === "authorizeStorefrontUpload",
+  );
+  assert.match(authorization.expected_output, /does not upload or publish/i);
+  assert.match(authorization.expected_output, /administrator/);
+  assert.match(authorization.expected_output, /hostname/);
+  assert.match(authorization.expected_output, /general account token/);
+  assert.ok(
+    submission.negative_test_cases.some((scenario) =>
+      /missing authoring tools/i.test(scenario.description),
+    ),
+  );
+  assert.ok(
+    submission.negative_test_cases.some((scenario) =>
+      /unauthorized publication/i.test(scenario.description),
+    ),
+  );
+  assert.ok(
+    submission.negative_test_cases.some((scenario) =>
+      /local execution/i.test(scenario.description),
+    ),
+  );
+  for (const scenario of [
+    ...submission.test_cases,
+    ...submission.negative_test_cases,
+  ]) {
+    if (scenario.tools_triggered !== null)
+      assert.ok(names.includes(scenario.tools_triggered));
+  }
+});
+
+test("public documentation does not identify pilot companies", () => {
+  const documents = [
+    "README.md",
+    "plugins/insitu-sales/README.md",
+    "plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md",
+    "chatgpt-app-submission.json",
+  ];
+  for (const file of documents) {
+    const content = fs.readFileSync(path.join(root, file), "utf8");
+    assert.doesNotMatch(content, /\b(?:11500|11082|11228|12591)\b/, file);
+    assert.doesNotMatch(content, /pilot companies[^.\n]*\b\d+\b/i, file);
+    assert.doesNotMatch(content, /testomer|testuser@test\.com/i, file);
+  }
+});
+
 test("all MCP configurations retain the production server", () => {
   for (const file of [
     ".mcp.json",

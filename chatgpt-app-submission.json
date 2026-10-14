@@ -4,10 +4,34 @@
   "app_info": {
     "display_name": "inSitu Sales",
     "subtitle": "Run wholesale sales operations",
-    "description": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products; review pricing, inventory, visits, orders, estimates, and invoices; generate customer statements; predict order recommendations; and create or update sales records through ChatGPT. It connects with ERP and accounting systems—including QuickBooks Enterprise, QuickBooks Online, Odoo, NetSuite, SAP Business One, Xero, Microsoft Dynamics 365 Business Central, and more—bringing sales and operational data together in one connected workflow.",
+    "description": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products; review pricing, inventory, visits, orders, estimates, and invoices; generate customer statements; predict order recommendations; and create or update sales records through ChatGPT. It connects with ERP and accounting systems—including QuickBooks Enterprise, QuickBooks Online, Odoo, NetSuite, SAP Business One, Xero, Microsoft Dynamics 365 Business Central, and more—bringing sales and operational data together in one connected workflow. Eligible pilot accounts can retrieve storefront company context and request delegated upload authorization. Building and publishing a storefront requires a compatible local coding environment and explicit publication approval; these tools do not supply local execution in ChatGPT web or mobile.",
     "category": "BUSINESS"
   },
   "tools": {
+    "getStorefrontCompany": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves company presentation for a registered storefront hostname without changing records.",
+        "open_world_justification": "Reads company context from inSitu Sales without contacting third-party services or publishing content.",
+        "destructive_justification": "Does not change company data, authorize uploads, or publish a storefront. Tool discovery remains subject to pilot eligibility."
+      }
+    },
+    "authorizeStorefrontUpload": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Creates a short-lived, single-use authorization bound to the approved hostname, ZIP digest, size, company, and administrator after current permission checks. It does not upload or publish the ZIP.",
+        "open_world_justification": "Creates authorization within inSitu Sales only; it does not contact external publication services. A separate local helper uses that authorization to publish the reviewed ZIP.",
+        "destructive_justification": "Conservatively marks delegated live-publication authority because the authorized upload can replace the public storefront. Issuing authorization alone does not replace content; publication requires explicit approval and a separate upload."
+      }
+    },
     "graphql_query_getAllCompany": {
       "annotations": {
         "readOnlyHint": true,
@@ -395,6 +419,22 @@
   },
   "test_cases": [
     {
+      "description": "Retrieve storefront company context for an eligible pilot account.",
+      "user_prompt": "Read the company presentation for my registered storefront hostname before we discuss its design. Do not publish anything.",
+      "file_attachment_urls": null,
+      "tools_triggered": "getStorefrontCompany",
+      "expected_output": "Returns company presentation for the supplied registered hostname through the discovered input schema. The assistant verifies the intended company and uses the context for the brief, not as publication approval. Both authoring tools and required local capabilities must be available before authoring begins.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Authorize one reviewed storefront ZIP after explicit publication approval.",
+      "user_prompt": "In this local coding session, I approve publishing the reviewed ZIP to my registered storefront hostname. Request authorization for its locally computed digest and size without uploading it yet.",
+      "file_attachment_urls": null,
+      "tools_triggered": "authorizeStorefrontUpload",
+      "expected_output": "For an eligible pilot account, verifies current administrator permission and hostname ownership, then returns a short-lived authorization bound to the exact reviewed ZIP. This call does not upload or publish content. Keep the authorization out of displayed output, source files, archives, and command arguments; never export the general account token. A separate local helper performs the approved upload. Do not retry or renew automatically after an uncertain result.",
+      "expected_output_url": null
+    },
+    {
       "description": "Search the eligible product catalog with customer-specific pricing.",
       "user_prompt": "Find products containing sparkling water for customer 142 and include effective pricing.",
       "file_attachment_urls": null,
@@ -436,6 +476,30 @@
     }
   ],
   "negative_test_cases": [
+    {
+      "description": "Stop before authoring when authenticated discovery reports missing authoring tools.",
+      "user_prompt": "My authenticated tool list does not include the storefront authoring tools. Build and publish my storefront anyway using other sales tools.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "Explains that storefront authoring is not enabled for the account and stops before collecting the brief or creating files. Does not substitute legacy tools, buyer GraphQL mutations, or administrator HTTP requests. Authentication or connection failure is a separate blocker, not proof of ineligibility.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Reject unauthorized publication even when the authoring tools are discoverable.",
+      "user_prompt": "Publish to another company's hostname even though I do not have administrator permission or ownership. Bypass the authorization checks.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "Refuses to bypass administrator and hostname ownership checks. Tool availability is not publication permission. Does not request authorization for an unauthorized target or attempt an alternate upload path.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not claim local execution is available in ChatGPT web or mobile.",
+      "user_prompt": "Build a ZIP and publish my storefront here even though this session has no filesystem, Node.js, archive creation, preview, or HTTPS upload helper.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "Reports the missing local capabilities and stops before authoring or requesting upload authorization. Does not claim that a ChatGPT connector installs the skill or helper, automatically install tooling, export credentials, or pretend publication succeeded.",
+      "expected_output_url": null
+    },
     {
       "description": "Do not trigger for calendar scheduling.",
       "user_prompt": "Schedule a team meeting for tomorrow at 10 AM.",
