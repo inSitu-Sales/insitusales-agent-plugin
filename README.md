@@ -164,6 +164,20 @@ plugins/insitu-sales/README.md
 plugins/insitu-sales/assets/
 ```
 
+## Storefront authoring pilot
+
+The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its standalone Node.js upload helper. Use this workflow in a local coding environment with file access, Node.js, ZIP creation, and outbound HTTPS. The skill stops before creating files if the authenticated connection lacks either storefront-authoring tool. Backend permissions remain authoritative; installing the public skill does not enable the pilot for an account.
+
+The existing sales connection stays unchanged. ChatGPT web/mobile execution and Claude/Cursor skill discovery need separate acceptance testing. Updating this repository does not establish that an approved ChatGPT listing has imported the new skill package.
+
+Run the dependency-free package checks from the repository root:
+
+```bash
+node --test tests/*.node.test.cjs
+```
+
+These checks cover package paths, access instructions, connection/version consistency, and helper preparation/expired-grant rejection. They do not replace a fresh installed-agent authoring test or live publication acceptance.
+
 ## Legal
 
 Privacy policy and terms are available at:
