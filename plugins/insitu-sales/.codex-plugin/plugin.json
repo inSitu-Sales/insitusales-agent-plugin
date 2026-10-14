@@ -18,8 +18,9 @@
       "Interactive"
     ],
     "websiteURL": "https://www.insitusales.com/",
-    "privacyPolicyURL": "https://www.insitusales.com/end-user-license-agreement",
-    "termsOfServiceURL": "https://www.insitusales.com/end-user-license-agreement",
+    "supportURL": "https://insitusales.zendesk.com",
+    "privacyPolicyURL": "https://www.insitusales.com/en/end-user-license-agreement/",
+    "termsOfServiceURL": "https://www.insitusales.com/en/end-user-license-agreement/",
     "brandColor": "#2395F6",
     "composerIcon": "./assets/icon.png",
     "logo": "./assets/logo.png",

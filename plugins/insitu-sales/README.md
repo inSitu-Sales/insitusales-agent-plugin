@@ -19,7 +19,7 @@ You need an inSitu Sales account. Each organization sees only the business data 
 
 The plugin connects your AI assistant to the inSitu Sales MCP server at `https://api.insitusales.com/mcp` over HTTPS. Your requests, and the customer, product, and sales records needed to answer them, are exchanged with your inSitu Sales account through that server. Sign-in uses OAuth with your inSitu Sales credentials. The sales tools run remotely. The optional storefront-authoring skill includes a local Node.js upload helper and creates source files, test artifacts, and ZIP archives in the workspace you approve. The helper receives only a short-lived authorization for one exact ZIP, not your general account token. Keep that authorization out of source files and generated storefronts.
 
-See the inSitu Sales privacy policy and terms: https://www.insitusales.com/end-user-license-agreement
+See the inSitu Sales privacy policy and terms: https://www.insitusales.com/en/end-user-license-agreement/
 
 ## Local storefront authoring pilot
 

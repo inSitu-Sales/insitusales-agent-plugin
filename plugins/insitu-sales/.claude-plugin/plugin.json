@@ -8,7 +8,7 @@
   },
   "homepage": "https://www.insitusales.com/",
   "icon": "./assets/logo.png",
-  "privacyPolicyUrl": "https://www.insitusales.com/end-user-license-agreement",
+  "privacyPolicyUrl": "https://www.insitusales.com/en/end-user-license-agreement/",
   "license": "Apache-2.0",
   "keywords": [
     "dsd",

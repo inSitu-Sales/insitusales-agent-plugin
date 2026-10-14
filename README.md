@@ -234,5 +234,5 @@ Before submitting an update, compare these entries with authenticated server dis
 Privacy policy and terms are available at:
 
 ```text
-https://www.insitusales.com/end-user-license-agreement
+https://www.insitusales.com/en/end-user-license-agreement/
 ```
