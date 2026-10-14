@@ -162,7 +162,30 @@ plugins/insitu-sales/.mcp.json
 plugins/insitu-sales/mcp.json
 plugins/insitu-sales/README.md
 plugins/insitu-sales/assets/
+plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md
+plugins/insitu-sales/skills/insitu-storefront-authoring/scripts/upload-storefront.js
+chatgpt-app-submission.json
 ```
+
+## Storefront authoring pilot
+
+The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its standalone Node.js upload helper. Use this workflow in a local coding environment with file access, Node.js, ZIP creation, and outbound HTTPS. The skill stops before creating files if the authenticated connection lacks either storefront-authoring tool. Backend permissions remain authoritative; installing the public skill does not enable the pilot for an account.
+
+The existing sales connection stays unchanged. ChatGPT web/mobile execution and Claude/Cursor skill discovery need separate acceptance testing. Updating this repository does not establish that an approved ChatGPT listing has imported the new skill package.
+
+Run the dependency-free package checks from the repository root:
+
+```bash
+node --test tests/*.node.test.cjs
+```
+
+These checks cover package paths, access instructions, connection/version consistency, the submission tool catalog, and helper preparation/expired-grant rejection. They do not replace a fresh installed-agent authoring test or live publication acceptance.
+
+## ChatGPT submission maintenance
+
+`chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. The two storefront authoring actions are available only to eligible pilot accounts; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.
+
+Before submitting an update, compare these entries with authenticated server discovery for an eligible account and verify that other accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skill or upload helper.
 
 ## Legal
 
