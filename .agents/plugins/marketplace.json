@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "insitu-sales",
+      "name": "app-6a7ca3b899bc81918a6ab1af007a82d6",
       "source": {
         "source": "local",
         "path": "./plugins/insitu-sales"

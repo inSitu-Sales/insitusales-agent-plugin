@@ -1,6 +1,6 @@
 # inSitu Sales Agent Plugin
 
-This repository contains the inSitu Sales plugin and MCP configuration for Codex, Claude Code, and Cursor.
+This repository contains the inSitu Sales plugin and MCP configuration for Codex, Claude Code, Cursor, GitHub Copilot, and Microsoft 365 Copilot.
 
 The plugin connects agents to the inSitu Sales MCP server:
 
@@ -148,6 +148,46 @@ ln -s /path/to/insitusales-agent-plugin/plugins/insitu-sales ~/.cursor/plugins/l
 
 Restart Cursor or run **Developer: Reload Window**, then verify that **inSitu Sales** and its MCP tools appear in **Customize**. Remove an existing link before recreating it.
 
+## Install In Microsoft 365 Copilot
+
+This repository includes a declarative agent project for Microsoft 365 Copilot. Its local templates are validated; tenant installation and live tool execution are still pending. Users need a Microsoft 365 Copilot license and an inSitu Sales account, and their Microsoft 365 administrator adds the agent for the organization.
+
+1. After tenant testing and authentication configuration are complete, obtain the app package for the target tenant from inSitu Sales.
+2. A Microsoft 365 administrator uploads it as a custom app in the Microsoft 365 admin center and assigns it to users.
+3. Users open https://m365.cloud.microsoft/chat, select **inSitu Sales** under **Agents**, and sign in with their inSitu Sales credentials when prompted.
+
+The project that builds the package is in [`microsoft-365-copilot/`](microsoft-365-copilot/README.md).
+
+## Install In Microsoft Copilot Studio
+
+To use inSitu Sales tools in an agent you build in Copilot Studio:
+
+1. Open your agent and select **Tools** → **Add a tool** → **Model Context Protocol**.
+2. Enter the server URL `https://api.insitusales.com/mcp`.
+3. Choose OAuth 2.0 with **Dynamic discovery** as the authentication type.
+4. Create the connection and sign in with your inSitu Sales credentials.
+
+## Install In GitHub Copilot CLI
+
+GitHub Copilot CLI reads this repository's plugin marketplace. Register it and install the plugin:
+
+```bash
+copilot plugin marketplace add inSitu-Sales/insitusales-agent-plugin
+copilot plugin install insitu-sales@insitu-sales
+```
+
+Start a new Copilot CLI session, then authenticate the inSitu Sales MCP server with your inSitu Sales credentials when prompted.
+
+## Install In VS Code
+
+[Install the inSitu Sales MCP server in VS Code](https://vscode.dev/redirect/mcp/install?name=insitu_sales&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fapi.insitusales.com%2Fmcp%22%7D), or add it from the command line:
+
+```bash
+code --add-mcp '{"name":"insitu_sales","type":"http","url":"https://api.insitusales.com/mcp"}'
+```
+
+VS Code prompts you to sign in with your inSitu Sales credentials the first time GitHub Copilot uses the server.
+
 ## Contents
 
 ```text
@@ -165,6 +205,7 @@ plugins/insitu-sales/assets/
 plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md
 plugins/insitu-sales/skills/insitu-storefront-authoring/scripts/upload-storefront.js
 chatgpt-app-submission.json
+microsoft-365-copilot/
 ```
 
 ## Storefront authoring pilot
