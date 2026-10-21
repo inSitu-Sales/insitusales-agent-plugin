@@ -5,6 +5,26 @@ const { createHash, randomBytes } = require("node:crypto");
 
 const UPLOAD_URL = "https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases";
 const MAX_BYTES = 10 * 1024 * 1024;
+const TRANSPORT_CODES = new Set([
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "ENETUNREACH",
+  "EHOSTUNREACH",
+  "EACCES",
+  "EPERM",
+  "EPIPE",
+  "EPROTO",
+  "CERT_HAS_EXPIRED",
+  "DEPTH_ZERO_SELF_SIGNED_CERT",
+  "SELF_SIGNED_CERT_IN_CHAIN",
+  "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+  "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+  "ERR_TLS_CERT_ALTNAME_INVALID",
+  "ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR",
+]);
 
 async function readArchive(path) {
   const handle = await fs.open(path, "r");
@@ -63,6 +83,21 @@ function multipart(grant, bytes) {
 
   return { boundary, body: Buffer.concat([prefix, bytes, Buffer.from(`\r\n--${boundary}--\r\n`)]) };
 }
+function uploadFailure(failureStage, httpStatus = null, code = null) {
+  const status = httpStatus === null ? "HTTP status unavailable" : `HTTP ${httpStatus}`;
+  const transportCode = TRANSPORT_CODES.has(code) ? code : null;
+  const transport = ["network", "response-stream"].includes(failureStage)
+    ? `; ${transportCode || "transport code unavailable"}`
+    : "";
+  const error = Error(
+    `Upload outcome could not be confirmed (${failureStage}; ${status}${transport}); do not retry automatically`,
+  );
+  error.failureStage = failureStage;
+  error.httpStatus = httpStatus;
+  error.transportCode = transportCode;
+
+  return error;
+}
 /** Return only a recognized outcome for this artifact; never echo a server payload containing secrets.
  * Unexpected responses remain uncertain, not permission to submit the upload again.
  */
@@ -74,14 +109,14 @@ function publicationResult(status, data, grant) {
   };
   const expected = outcomes[status];
   if (!expected || !data || data.status !== expected[0] || !expected[1].includes(data.stage)) {
-    throw Error("Upload outcome could not be confirmed; do not retry automatically");
+    throw uploadFailure("response-contract", status);
   }
   if (
     data.hostname !== grant.hostname ||
     data.release?.digest !== grant.digest ||
     !/^[a-f0-9]{32}$/.test(data.release?.siteId)
   ) {
-    throw Error("Upload outcome could not be confirmed; do not retry automatically");
+    throw uploadFailure("artifact-mismatch", status);
   }
 
   return {
@@ -94,7 +129,8 @@ function publicationResult(status, data, grant) {
 }
 function sendUpload(transport, grant, upload) {
   return new Promise((resolve, reject) => {
-    const fail = () => reject(Error("Upload outcome could not be confirmed; do not retry automatically"));
+    let httpStatus = null;
+    const fail = (stage, error) => reject(uploadFailure(stage, httpStatus, error?.code));
     const request = transport.request(
       UPLOAD_URL,
       {
@@ -106,35 +142,44 @@ function sendUpload(transport, grant, upload) {
         },
       },
       (response) => {
+        httpStatus = response.statusCode;
         const chunks = [];
         let size = 0;
         response.on("data", (chunk) => {
           size += chunk.length;
           if (size > 65536) {
+            fail("response-size");
             response.destroy();
-            fail();
 
             return;
           }
 
           chunks.push(chunk);
         });
-        response.on("error", fail);
-        response.on("aborted", fail);
+        response.on("error", (error) => fail("response-stream", error));
+        response.on("aborted", () => fail("response-stream"));
         response.on("end", () => {
+          let data;
           try {
-            resolve(publicationResult(response.statusCode, JSON.parse(Buffer.concat(chunks).toString("utf8")), grant));
+            data = JSON.parse(Buffer.concat(chunks).toString("utf8"));
           } catch {
-            fail();
+            fail("response-format");
+
+            return;
+          }
+          try {
+            resolve(publicationResult(httpStatus, data, grant));
+          } catch (error) {
+            reject(error);
           }
         });
       },
     );
     request.setTimeout(120000, () => {
+      fail("timeout");
       request.destroy();
-      fail();
     });
-    request.on("error", fail);
+    request.on("error", (error) => fail("network", error));
     request.end(upload.body);
   });
 }
@@ -143,6 +188,34 @@ async function publishArchive(path, grant, transport = https) {
   validateGrant(grant, bytes);
 
   return sendUpload(transport, grant, multipart(grant, bytes));
+}
+function checkConnection(transport = https) {
+  return new Promise((resolve, reject) => {
+    const signal = AbortSignal.timeout(15000);
+    const fail = (error) => {
+      const failureStage = signal.aborted ? "timeout" : "network";
+      const transportCode = !signal.aborted && TRANSPORT_CODES.has(error?.code) ? error.code : null;
+      const failure = Error(
+        `Publication connection check failed (${failureStage}; ${transportCode || "transport code unavailable"}); no upload was attempted`,
+      );
+      failure.failureStage = failureStage;
+      failure.httpStatus = null;
+      failure.transportCode = transportCode;
+      reject(failure);
+    };
+
+    try {
+      const request = transport.request(UPLOAD_URL, { method: "HEAD", signal }, (response) => {
+        response.on("error", fail);
+        response.resume();
+        resolve({ status: "reachable", httpStatus: response.statusCode });
+      });
+      request.on("error", fail);
+      request.end();
+    } catch (error) {
+      fail(error);
+    }
+  });
 }
 async function readGrant() {
   let text = "";
@@ -158,8 +231,13 @@ async function readGrant() {
 }
 async function main() {
   const [mode, path, ...extra] = process.argv.slice(2);
+  if (mode === "--check-connection" && path === undefined && !extra.length) {
+    process.stdout.write(`${JSON.stringify(await checkConnection())}\n`);
+
+    return;
+  }
   if (!path || extra.length || !["--prepare", "--publish"].includes(mode)) {
-    throw Error("Usage: upload-storefront.js --prepare ZIP | --publish ZIP (grant JSON on stdin)");
+    throw Error("Usage: upload-storefront.js --check-connection | --prepare ZIP | --publish ZIP (grant JSON on stdin)");
   }
 
   const result = mode === "--prepare" ? await prepareArchive(path) : await publishArchive(path, await readGrant());
@@ -173,4 +251,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { prepareArchive, publishArchive };
+module.exports = { prepareArchive, publishArchive, checkConnection };
