@@ -4,7 +4,7 @@
 
 | Need                                | Authoritative starting point                                                                                 |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Administrator tools                 | The authenticated InSitu MCP connection's tool list, descriptions, and input schemas                         |
+| Administrator tools                 | The authenticated inSitu MCP connection's tool list, descriptions, and input schemas                         |
 | Production buyer GraphQL            | https://api.insitusales.com/api/v1/b2b-ecommerce/graphql                                                     |
 | Default editable source             | https://storage.googleapis.com/insitusalesfront-skin-templates/templates/default/source.tar.gz               |
 | Runtime, transport, and composition | The downloaded template's README, configuration examples, package scripts, shared client, and tests          |

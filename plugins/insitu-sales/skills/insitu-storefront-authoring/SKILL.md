@@ -1,19 +1,19 @@
 ---
 name: insitu-storefront-authoring
-description: Use when creating, remixing, or revising a static InSitu B2B buyer storefront for mobile and desktop.
+description: Use when creating, remixing, or revising a static inSitu B2B buyer storefront for mobile and desktop.
 ---
 
-# Author an InSitu buyer storefront
+# Author an inSitu buyer storefront
 
 Remix maintained source into a working buyer experience. Discover capabilities from the connected service, not from a copied operation catalog. Administrator MCP supplies authoring context and publication authority; buyer commerce uses direct GraphQL, not through MCP tools.
 
-## Execution and authorization guards
+## Set up the authoring environment
 
-Discover the authenticated InSitu MCP server and its exposed tool names and schemas. Both getStorefrontCompany and authorizeStorefrontUpload must be available. If either tool is missing from a successfully authenticated tool list, report that this connection is not enabled for storefront authoring yet and stop before creating storefront files. Authentication or connection failure is a blocker, not proof of account ineligibility. Publication is forbidden without the deployment tool. Do not bypass missing tools with administrator HTTP calls. Tool discovery does not replace current administrator authority and hostname ownership checks.
+Use the connected inSitu MCP tools and their schemas without a separate account-eligibility preflight. The server enforces current administrator permission and hostname ownership when authorizing publication. If an operation is denied, stop that operation and report the service response; do not bypass it with administrator HTTP calls.
 
 Confirm writable workspace files, Node.js, HTTPS, archive inspection/creation, and browser preview capabilities. Locate the [bundled upload helper](scripts/upload-storefront.js) relative to this skill. After inspecting the template, check its declared runtime and package manager against the available versions. Do not install packages, change client configuration, or export credentials without approval. Missing execution capabilities block implementation, not discussion of the brief; plugin installation alone supplies none of them.
 
-Once these guards pass, call getStorefrontCompany with the author's intended hostname using the discovered input schema. Read [service discovery](discovery.md) first when selecting nested company context or locating the public storefront GraphQL endpoint. Confirm the returned identity matches the intended company; do not substitute another tenant.
+For company context, call getStorefrontCompany with the author's intended hostname using the discovered input schema. Read [service discovery](discovery.md) first when selecting nested company context or locating the public storefront GraphQL endpoint. Confirm the returned identity matches the intended company; do not substitute another tenant.
 
 ## Confirm the storefront brief
 
