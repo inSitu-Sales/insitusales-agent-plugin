@@ -4,7 +4,7 @@
 
 | Need                                | Authoritative starting point                                                                                 |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Administrator tools                 | The authenticated InSitu MCP connection's tool list, descriptions, and input schemas                         |
+| Administrator tools                 | The authenticated inSitu MCP connection's tool list, descriptions, and input schemas                         |
 | Production buyer GraphQL            | https://api.insitusales.com/api/v1/b2b-ecommerce/graphql                                                     |
 | Default editable source             | https://storage.googleapis.com/insitusalesfront-skin-templates/templates/default/source.tar.gz               |
 | Runtime, transport, and composition | The downloaded template's README, configuration examples, package scripts, shared client, and tests          |
@@ -47,6 +47,6 @@ A field in the schema is not permission to call it. Establish public versus buye
 
 ## Company context and settings
 
-`getStorefrontCompany` maps to the public company query. Read its tool description for the return type, then inspect that type and its nested types through GraphQL. The default MCP selection contains scalar fields only: nested company data can be omitted even when supported. If the discovered tool schema exposes `_selection`, supply an explicit GraphQL selection for the needed public branding, contact, links, and settings.
+`getStorefrontCompany` is an administrative operation, not the public company query. Call it without identity arguments: the backend resolves the current authorized company and its registered domain. Its default response includes nested contact, links, settings, and supported access defaults along with branding and the registered URL. Use the discovered `_selection` schema to request a smaller result when useful. The public company query remains a separate hostname-based buyer contract. Neither registration nor authoring context proves that a release is published.
 
-These settings are an allowlisted public projection, not the raw company configuration or a complete feature matrix. Missing fields in a response are not false settings. Other effective behavior appears in the relevant catalog, account, or checkout contracts and server responses. Do not reconstruct hidden settings or enforce legacy settings locally. Company context is neither buyer access nor proof of administrator publication authority.
+Returned settings are a supported projection, not the raw company configuration or a complete feature matrix. Missing fields in a response are not false settings. Other effective behavior appears in the relevant catalog, account, or checkout contracts and server responses. Do not reconstruct hidden settings or enforce legacy settings locally. Company context is neither buyer access nor proof of administrator publication authority.

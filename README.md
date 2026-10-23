@@ -209,9 +209,9 @@ chatgpt-app-submission.json
 microsoft-365-copilot/
 ```
 
-## Storefront authoring pilot
+## Storefront authoring
 
-The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its standalone Node.js upload helper. Use this workflow in a local coding environment with file access, Node.js, ZIP creation, and outbound HTTPS. The skill stops before creating files if the authenticated connection lacks either storefront-authoring tool. Backend permissions remain authoritative; installing the public skill does not enable the pilot for an account.
+The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its standalone Node.js upload helper. Use this workflow in a local coding environment with file access, Node.js, ZIP creation, and outbound HTTPS. The skill has no company allowlist or account-eligibility preflight. Backend administrator permission and hostname ownership remain authoritative for publication.
 
 The existing sales connection stays unchanged. ChatGPT web/mobile execution and Claude/Cursor skill discovery need separate acceptance testing. Updating this repository does not establish that an approved ChatGPT listing has imported the new skill package.
 
@@ -229,9 +229,9 @@ The chat-and-website-preview extension is in [`extensions/insitu-workspace/`](ex
 
 ## ChatGPT submission maintenance
 
-`chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. The two storefront authoring actions are available only to eligible pilot accounts; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.
+`chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. The two storefront authoring actions are available to verified company-user accounts without a company allowlist; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.
 
-Before submitting an update, compare these entries with authenticated server discovery for an eligible account and verify that other accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skill or upload helper.
+Before submitting an update, compare these entries with authenticated company-user discovery and verify that buyer and mobile accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skill or upload helper.
 
 ## Legal
 

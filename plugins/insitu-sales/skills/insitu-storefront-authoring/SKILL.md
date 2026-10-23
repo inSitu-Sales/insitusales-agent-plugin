@@ -1,23 +1,29 @@
 ---
 name: insitu-storefront-authoring
-description: Use when creating, remixing, or revising a static InSitu B2B buyer storefront for mobile and desktop.
+description: Use when creating, remixing, or revising a static inSitu B2B buyer storefront for mobile and desktop, including requests such as "create my B2B", "online store", "crear mi B2B", "tienda online", or "catálogo online".
 ---
 
-# Author an InSitu buyer storefront
+# Author an inSitu buyer storefront
 
 Remix maintained source into a working buyer experience. Discover capabilities from the connected service, not from a copied operation catalog. Administrator MCP supplies authoring context and publication authority; buyer commerce uses direct GraphQL, not through MCP tools.
 
-## Execution and authorization guards
+## Begin from a natural request
 
-Discover the authenticated InSitu MCP server and its exposed tool names and schemas. Both getStorefrontCompany and authorizeStorefrontUpload must be available. If either tool is missing from a successfully authenticated tool list, report that this connection is not enabled for storefront authoring yet and stop before creating storefront files. Authentication or connection failure is a blocker, not proof of account ineligibility. Publication is forbidden without the deployment tool. Do not bypass missing tools with administrator HTTP calls. Tool discovery does not replace current administrator authority and hostname ownership checks.
+Respond in the user's language. A request to create a B2B storefront is enough to begin; no exact phrase or technical brief is necessary. Explain that you will discover the company, clarify the missing design and content choices, and show a preview before requesting publication approval. Continue from an existing brief rather than repeating answered questions. A plugin mention alone is not an instruction to build: ask which sales or storefront task the user wants.
+
+## Set up the authoring environment
+
+Use the connected inSitu MCP tools and their schemas without a separate account-eligibility preflight. The server enforces current administrator permission and hostname ownership when authorizing publication. If an operation is denied, stop that operation and report the service response; do not bypass it with administrator HTTP calls.
 
 Confirm writable workspace files, Node.js, HTTPS, archive inspection/creation, and browser preview capabilities. Locate the [bundled upload helper](scripts/upload-storefront.js) relative to this skill. After inspecting the template, check its declared runtime and package manager against the available versions. Do not install packages, change client configuration, or export credentials without approval. Missing execution capabilities block implementation, not discussion of the brief; plugin installation alone supplies none of them.
 
-Once these guards pass, call getStorefrontCompany with the author's intended hostname using the discovered input schema. Read [service discovery](discovery.md) first when selecting nested company context or locating the public storefront GraphQL endpoint. Confirm the returned identity matches the intended company; do not substitute another tenant.
+For company context, call getStorefrontCompany without identity arguments. The authenticated account determines the company; use the returned registered hostname, URL, branding, and supported access defaults. Do not ask the user for a hostname or alias, or construct a domain from a company name. Read [service discovery](discovery.md) when selecting company context or locating the public storefront GraphQL endpoint. If the returned company differs from the intended project, stop and report the mismatch rather than selecting another tenant. A registered URL does not establish publication status.
+
+If the discovered tool requires identity selectors, report an outdated tool definition and ask the user to refresh the plugin connection and start a new conversation. Do not invent a hostname to satisfy that schema. If the argument-free call is denied, report the exact response and stop company-dependent work; changing the prompt or reinstalling the skill does not resolve backend authorization. Never claim the session belongs to the intended company without a successful context response.
 
 ## Confirm the storefront brief
 
-Ask only for missing decisions: target hostname, output location, audience, branding, content, and navigation. Use an adaptive interview for several unresolved choices. Present a short brief containing the supported buyer journey, chosen skin, proposed presentation changes, and known blockers; confirm consequential tradeoffs before building.
+Ask only for missing project decisions: output location, audience, branding, content, and navigation. Obtain technical company context through the tool rather than asking the user to supply configuration. Use an adaptive interview for several unresolved choices. Present a short brief containing the supported buyer journey, chosen skin, proposed presentation changes, and known blockers; confirm consequential tradeoffs before building.
 
 Use company presentation and the template's documented fallbacks. Separate an author's visual preferences from company access rules and existing branding precedence; resolve conflicts explicitly. A public company object does not open a closed catalog. Presentation gates cannot make publicly returned data confidential. Use approved legal content rather than inventing policies.
 

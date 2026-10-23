@@ -21,13 +21,17 @@ The plugin connects your AI assistant to the inSitu Sales MCP server at `https:/
 
 See the inSitu Sales privacy policy and terms: https://www.insitusales.com/en/end-user-license-agreement/
 
-## Local storefront authoring pilot
+## Local storefront authoring
 
-In a coding environment that supports packaged skills, use `insitu-storefront-authoring` to create a static B2B buyer storefront. This pilot requires the authenticated MCP tools `getStorefrontCompany` and `authorizeStorefrontUpload`. If either tool is missing from the authenticated tool list, your account is not enabled for storefront authoring yet. Existing sales tools remain available.
+In a coding environment that supports packaged skills, use `insitu-storefront-authoring` to create a static B2B buyer storefront. Company-user accounts can use `getStorefrontCompany` and `authorizeStorefrontUpload` without a company allowlist. Existing sales tools remain available. Call `getStorefrontCompany` without identity arguments to discover the authenticated company's registered URL and authoring context; users do not need to supply technical hostnames. The service checks current administrator permission. Registration is not proof of publication.
 
-The workflow needs filesystem access, Node.js, ZIP creation, and outbound HTTPS. Installing the plugin does not supply these capabilities in ChatGPT web or mobile. The skill checks access and local capabilities before creating files. Plain HTML/CSS/JavaScript needs no package installation. Publication requires explicit approval of the hostname and reviewed ZIP; missing or uncertain results must not trigger automatic retries.
+In Codex, mention **@inSitu Sales** and ask to create your B2B storefront in English or Spanish. You do not need to name the skill. The Codex manifest includes bilingual storefront starters in `interface.defaultPrompt`, alongside the existing sales suggestions. They request a preview before publication approval; they do not start work automatically. Display depends on the host and installed package. See [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins#add-openai-specific-metadata).
 
-The skill is included in the public package, but the backend enforces pilot eligibility and publication permissions. A locally packaged skill is not proof that an approved ChatGPT listing has imported that version.
+MCP tool definitions come from the connected server, not this package. If company discovery still requires a hostname, refresh the connection and test in a new conversation. The current operation accepts no identity selectors. An argument-free `Company unavailable` response is a separate backend access denial; support must verify the authenticated company and its eligibility. Do not supply a guessed hostname or treat a package update as an authorization fix.
+
+The workflow needs filesystem access, Node.js, ZIP creation, and outbound HTTPS. Installing the plugin does not supply these capabilities in ChatGPT web or mobile. The skill checks local execution capabilities, not account eligibility. Plain HTML/CSS/JavaScript needs no package installation. Publication requires explicit approval of the hostname and reviewed ZIP; missing or uncertain results must not trigger automatic retries.
+
+The skill is included in the public package, but the backend still enforces administrator permission and hostname ownership for publication. A locally packaged skill is not proof that an approved ChatGPT listing has imported that version.
 
 ## Support
 
