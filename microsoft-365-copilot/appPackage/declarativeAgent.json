@@ -1,0 +1,39 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json",
+  "version": "v1.8",
+  "name": "inSitu Sales${{APP_NAME_SUFFIX}}",
+  "description": "Work with your inSitu Sales data from Microsoft 365 Copilot: find customers and products, review pricing, inventory, visits, orders, estimates, and invoices, generate customer statements, get order recommendations, and create or update sales records.",
+  "instructions": "$[file('instruction.txt')]",
+  "conversation_starters": [
+    {
+      "title": "Find a customer",
+      "text": "Find a customer by name in my inSitu Sales account."
+    },
+    {
+      "title": "Review recent orders",
+      "text": "Show my latest five sales orders, with customer, date, status and total."
+    },
+    {
+      "title": "Check stock",
+      "text": "Help me check product stock in a warehouse."
+    },
+    {
+      "title": "Check product pricing",
+      "text": "Look up the price of a product for one of my customers."
+    },
+    {
+      "title": "Review invoices",
+      "text": "Show recent invoices for a customer."
+    },
+    {
+      "title": "Customer statement",
+      "text": "Help me generate a customer statement for a date range."
+    }
+  ],
+  "actions": [
+    {
+      "id": "insitusales",
+      "file": "ai-plugin.json"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.30/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.30",
+  "version": "1.0.0",
+  "id": "${{TEAMS_APP_ID}}",
+  "developer": {
+    "name": "inSitu Sales",
+    "websiteUrl": "https://www.insitusales.com/",
+    "privacyUrl": "https://www.insitusales.com/en/end-user-license-agreement/",
+    "termsOfUseUrl": "https://www.insitusales.com/en/end-user-license-agreement/"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "inSitu Sales${{APP_NAME_SUFFIX}}",
+    "full": "inSitu Sales for Microsoft 365 Copilot"
+  },
+  "description": {
+    "short": "Field sales, van sales, and DSD operations for wholesalers and distributors.",
+    "full": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products; review pricing, inventory, visits, orders, estimates, and invoices; generate customer statements; get order recommendations; and create or update sales records from Microsoft 365 Copilot. It connects with ERP and accounting systems, including QuickBooks Enterprise, QuickBooks Online, Odoo, NetSuite, SAP Business One, Xero, and Microsoft Dynamics 365 Business Central. Users sign in with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows."
+  },
+  "accentColor": "#2395F6",
+  "supportsChannelFeatures": "tier1",
+  "composeExtensions": [],
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "declarativeAgent",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  },
+  "permissions": [
+    "identity"
+  ],
+  "validDomains": [
+    "api.insitusales.com",
+    "www.insitusales.com"
+  ]
+}

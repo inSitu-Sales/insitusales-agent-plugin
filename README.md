@@ -223,6 +223,10 @@ node --test tests/*.node.test.cjs
 
 These checks cover package paths, access instructions, connection/version consistency, the submission tool catalog, and helper preparation/expired-grant rejection. They do not replace a fresh installed-agent authoring test or live publication acceptance.
 
+## Chat extension development
+
+The chat-and-website-preview extension is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). It declares a native **inSitu Sales** global sidebar app and conversation-panel entrypoint using OpenAI Plugin Extensions. Users can chat with inSitu and preview website redesigns in the host. The local backend integration remains behind `MCP_WORKSPACE_EXTENSION_ENABLED` and is not evidence of production deployment.
+
 ## ChatGPT submission maintenance
 
 `chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. The two storefront authoring actions are available only to eligible pilot accounts; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.

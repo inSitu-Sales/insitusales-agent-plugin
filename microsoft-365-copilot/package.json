@@ -1,0 +1,21 @@
+{
+  "name": "insitu-sales-copilot-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "inSitu Sales declarative agent for Microsoft 365 Copilot",
+  "scripts": {
+    "validate": "node scripts/validate.js",
+    "signin": "atk auth login m365 --telemetry false",
+    "provision": "atk provision --env dev --interactive false --telemetry false",
+    "package": "node scripts/package.js"
+  },
+  "engines": { "node": ">=22" },
+  "devDependencies": {
+    "@microsoft/m365agentstoolkit-cli": "1.1.17",
+    "ajv": "8.18.0",
+    "ajv-draft-04": "1.0.0",
+    "ajv-formats": "3.0.1",
+    "dotenv": "16.6.1",
+    "yaml": "2.9.1"
+  }
+}
