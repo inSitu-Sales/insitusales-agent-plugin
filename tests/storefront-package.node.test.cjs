@@ -26,6 +26,46 @@ test("the Codex manifest resolves a packaged storefront skill and helper", () =>
   assert.ok(fs.statSync(helperPath).isFile());
 });
 
+test("storefront discovery recognizes English and Spanish requests", () => {
+  const skill = fs.readFileSync(skillPath, "utf8");
+  const description = skill
+    .split("\n")
+    .find((line) => line.startsWith("description:"));
+  for (const phrase of [
+    "create my B2B",
+    "online store",
+    "crear mi B2B",
+    "tienda online",
+    "catálogo online",
+  ])
+    assert.ok(description.includes(phrase), `missing trigger ${phrase}`);
+  assert.match(skill, /Respond in the user's language/);
+  assert.match(skill, /existing brief/);
+  assert.match(skill, /outdated tool definition/);
+  assert.match(skill, /Do not invent.*hostname/);
+});
+
+test("Codex offers bilingual storefront starters while retaining sales suggestions", () => {
+  const { interface: presentation } = readJson(
+    "plugins/insitu-sales/.codex-plugin/plugin.json",
+  );
+  assert.ok(presentation.defaultPrompt.includes("Show me today’s invoices"));
+  assert.ok(
+    presentation.defaultPrompt.includes(
+      "What were my top-selling products last week?",
+    ),
+  );
+  for (const beginning of [
+    "Help me create my B2B storefront",
+    "Ayúdame a crear mi tienda B2B",
+  ])
+    assert.ok(
+      presentation.defaultPrompt.some((prompt) => prompt.startsWith(beginning)),
+    );
+  for (const prompt of presentation.defaultPrompt.slice(2))
+    assert.match(prompt, /preview|vista previa/);
+});
+
 test("every authored skin requires both legal views and blocks readiness on missing policies", () => {
   const skill = fs.readFileSync(skillPath, "utf8");
   assert.match(skill, /Every storefront must include/);
@@ -35,30 +75,17 @@ test("every authored skin requires both legal views and blocks readiness on miss
   assert.match(skill, /sanitize executable HTML/);
 });
 
-test("the skill checks both pilot tools before starting authoring", () => {
+test("authoring has no account-eligibility preflight and leaves authorization to the service", () => {
   const skill = fs.readFileSync(skillPath, "utf8");
-  const preflight = skill
-    .split("## Execution and authorization guards\n")[1]
-    ?.split("\n## ")[0];
-  assert.ok(preflight, "access preflight is missing");
-  for (const action of ["getStorefrontCompany", "authorizeStorefrontUpload"]) {
-    assert.ok(preflight.includes(action));
-  }
-  assert.match(preflight, /either tool is missing/);
-  assert.match(preflight, /not enabled for storefront authoring yet/);
-  assert.match(preflight, /stop before creating storefront files/);
-  assert.match(preflight, /Node\.js/);
-  assert.match(preflight, /Do not install/);
-  assert.match(preflight, /Publication is forbidden/);
-  assert.match(preflight, /Once these guards pass, call getStorefrontCompany/);
-  assert.match(
-    preflight,
-    /current administrator authority and hostname ownership/,
+  assert.doesNotMatch(
+    skill,
+    /not enabled for storefront authoring yet|stop before creating storefront files|Both .* must be available/,
   );
-  assert.ok(
-    skill.indexOf("## Execution and authorization guards") <
-      skill.indexOf("## Confirm the storefront brief"),
-  );
+  assert.match(skill, /server enforces.*administrator.*hostname ownership/i);
+  assert.match(skill, /call getStorefrontCompany/);
+  assert.match(skill, /Node\.js/);
+  assert.match(skill, /Do not install/);
+  assert.match(skill, /denied.*stop|stop.*denied/i);
 });
 
 test("the package keeps buyer commerce separate from administrator authorization", () => {
@@ -151,7 +178,12 @@ test("discovery has a concrete entry point without a copied operation catalog", 
     "_selection",
   ])
     assert.ok(discovery.includes(term), `missing discovery anchor ${term}`);
-  assert.match(discovery, /default.*scalar/i);
+  assert.match(discovery, /default.*nested/i);
+  assert.match(discovery, /administrative.*not.*public company query/i);
+  assert.match(skill, /call getStorefrontCompany without.*arguments/i);
+  assert.match(skill, /Do not ask.*hostname.*alias/i);
+  assert.doesNotMatch(skill, /missing decisions: target hostname/);
+  assert.doesNotMatch(discovery, /maps to the public company query/);
   assert.match(discovery, /not.*raw company/i);
   assert.match(discovery, /not.*permission/i);
   assert.doesNotMatch(discovery, /PORTAL_[A-Z_]+|b2bPlaceOrder|b2bSignIn/);
@@ -260,7 +292,12 @@ test("public documentation does not identify pilot companies", () => {
   for (const file of documents) {
     const content = fs.readFileSync(path.join(root, file), "utf8");
     assert.doesNotMatch(content, /\b(?:11500|11082|11228|12591)\b/, file);
-    assert.doesNotMatch(content, /pilot companies[^.\n]*\b\d+\b/i, file);
+    assert.doesNotMatch(content, /\bpilot\b/i, file);
+    assert.doesNotMatch(
+      content,
+      /Both authoring tools.*before authoring begins/i,
+      file,
+    );
     assert.doesNotMatch(content, /testomer|testuser@test\.com/i, file);
   }
 });
