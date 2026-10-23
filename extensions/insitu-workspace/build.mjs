@@ -1,5 +1,7 @@
 import { build } from 'esbuild';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+process.chdir(fileURLToPath(new URL('.', import.meta.url)));
 const logo = `data:image/png;base64,${(await readFile('assets/insitu-mark.png')).toString('base64')}`;
 // Navigation uses MCP tool icons, independently of the plugin directory logo.
 await writeFile('server/workspace-brand.cjs', `'use strict';\nmodule.exports = ${JSON.stringify({ src: logo, mimeType: 'image/png', sizes: ['120x120'] })};\n`);

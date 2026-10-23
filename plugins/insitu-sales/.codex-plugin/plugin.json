@@ -1,6 +1,6 @@
 {
   "name": "app-6a7ca3b899bc81918a6ab1af007a82d6",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products; review pricing, inventory, visits, orders, estimates, and invoices; generate customer statements; predict order recommendations; and create or update sales records through AI assistants. It connects with ERP and accounting systems—including QuickBooks Enterprise, QuickBooks Online, Odoo, NetSuite, SAP Business One, Xero, Microsoft Dynamics 365 Business Central, and more—bringing sales and operational data together in one connected workflow. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
   "author": {
     "name": "inSitu Sales",
@@ -13,7 +13,10 @@
     "longDescription": "inSitu Sales helps manufacturers, wholesalers, and distributors find customers and products; review pricing, inventory, visits, orders, estimates, and invoices; generate customer statements; predict order recommendations; and create or update sales records through AI assistants. It connects with ERP and accounting systems—including QuickBooks Enterprise, QuickBooks Online, Odoo, NetSuite, SAP Business One, Xero, Microsoft Dynamics 365 Business Central, and more—bringing sales and operational data together in one connected workflow. Users authenticate with their existing inSitu Sales credentials, so each organization accesses only its authorized business data and workflows.",
     "developerName": "inSitu Sales",
     "category": "Business & Operations",
-    "capabilities": ["MCP", "Interactive"],
+    "capabilities": [
+      "MCP",
+      "Interactive"
+    ],
     "websiteURL": "https://www.insitusales.com/",
     "supportURL": "https://insitusales.zendesk.com",
     "privacyPolicyURL": "https://www.insitusales.com/en/end-user-license-agreement/",
@@ -24,7 +27,8 @@
     "defaultPrompt": [
       "Show me today’s invoices",
       "What were my top-selling products last week?",
-      "Help me create my B2B storefront with inSitu. Guide me step by step and show me a preview."
+      "Help me create my B2B storefront with inSitu. Guide me step by step and show me a preview.",
+      "Ayúdame a crear mi tienda B2B con inSitu. Guíame paso a paso y muéstrame una vista previa."
     ]
   },
   "mcpServers": "./.codex-mcp.json"

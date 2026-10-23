@@ -42,7 +42,7 @@ For Codex, register this repository as a plugin marketplace and install the inSi
 
 ```bash
 codex plugin marketplace add /path/to/insitusales-agent-plugin
-codex plugin add insitu-sales@insitu-sales
+codex plugin add app-6a7ca3b899bc81918a6ab1af007a82d6@insitu-sales
 ```
 
 For Claude Code, register this repository as a plugin marketplace and install the inSitu Sales plugin:
@@ -68,10 +68,10 @@ Clone this repository, then register its marketplace with Codex:
 
 ```bash
 codex plugin marketplace add /path/to/insitusales-agent-plugin
-codex plugin add insitu-sales@insitu-sales
+codex plugin add app-6a7ca3b899bc81918a6ab1af007a82d6@insitu-sales
 ```
 
-After installing, start a new Codex thread so the plugin tools are loaded.
+The desktop plugin includes a local home-page MCP and the production sales connection. Node.js 22+ must be available as `node` on the desktop app's PATH. After updating, restart the desktop app to reload navigation and start a new chat. Open **inSitu Sales** from the sidebar, or ask directly in chat to create your B2B storefront. Selecting a home-page suggestion prepares a draft in the native composer; send it to begin.
 
 ## Install In Claude Code
 
@@ -225,7 +225,7 @@ These checks cover package paths, access instructions, connection/version consis
 
 ## Chat extension development
 
-The chat-and-website-preview extension is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). It declares a native **inSitu Sales** global sidebar app and conversation-panel entrypoint using OpenAI Plugin Extensions. Users can chat with inSitu and preview website redesigns in the host. The local backend integration remains behind `MCP_WORKSPACE_EXTENSION_ENABLED` and is not evidence of production deployment.
+The chat-and-website-preview extension is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). It declares a native **inSitu Sales** global sidebar app and conversation-panel entrypoint using OpenAI Plugin Extensions. Users can chat with inSitu and preview website redesigns in the host. The main desktop plugin bundles its presentation MCP and HTML; maintainers rebuild both with `npm run package:plugin` in that directory and commit the generated plugin files before release. The optional remote backend integration remains behind `MCP_WORKSPACE_EXTENSION_ENABLED`; it is not needed for the bundled desktop interface.
 
 ## ChatGPT submission maintenance
 

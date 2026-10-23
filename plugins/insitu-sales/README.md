@@ -21,13 +21,19 @@ The plugin connects your AI assistant to the inSitu Sales MCP server at `https:/
 
 See the inSitu Sales privacy policy and terms: https://www.insitusales.com/en/end-user-license-agreement/
 
+## Desktop home page
+
+The Codex desktop package includes the inSitu Sales home page and a bundled local presentation MCP (`insitu_home`). It requires Node.js 22+ available as `node` on the desktop app's PATH. Codex starts it automatically; no separate Home (Dev) plugin, browser simulator, npm install, or backend deployment is required. The home page advertises sidebar and conversation-panel entrypoints on compatible clients. After updating the plugin, restart the desktop app to reload its tools and navigation.
+
+The local MCP serves the packaged HTML and website preview only. Business tools and authentication continue through `https://api.insitusales.com/mcp`. Selecting the B2B card prepares a message in the native composer; edit and send it to start guided creation. You can also ask directly in chat. The single packaged skill, `insitu-storefront-authoring`, contains the creation procedure and supporting home/preview guidance. Clients without local MCP execution can still use the remote sales connection; installing this package does not enable the home page in ChatGPT web or mobile.
+
 ## Local storefront authoring
 
 In a coding environment that supports packaged skills, use `insitu-storefront-authoring` to create a static B2B buyer storefront. Company-user accounts can use `getStorefrontCompany` and `authorizeStorefrontUpload` without a company allowlist. Existing sales tools remain available. Call `getStorefrontCompany` without identity arguments to discover the authenticated company's registered URL and authoring context; users do not need to supply technical hostnames. The service checks current administrator permission. Registration is not proof of publication.
 
 In Codex, mention **@inSitu Sales** and ask to create your B2B storefront in English or Spanish. You do not need to name the skill. The Codex manifest includes bilingual storefront starters in `interface.defaultPrompt`, alongside the existing sales suggestions. They request a preview before publication approval; they do not start work automatically. Display depends on the host and installed package. See [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins#add-openai-specific-metadata).
 
-MCP tool definitions come from the connected server, not this package. If company discovery still requires a hostname, refresh the connection and test in a new conversation. The current operation accepts no identity selectors. An argument-free `Company unavailable` response is a separate backend access denial; support must verify the authenticated company and its eligibility. Do not supply a guessed hostname or treat a package update as an authorization fix.
+Business tool definitions come from the connected remote server. The desktop presentation tools come from the bundled local MCP. If company discovery still requires a hostname, refresh the connection and test in a new conversation. The current operation accepts no identity selectors. An argument-free `Company unavailable` response is a separate backend access denial; support must verify the authenticated company and its eligibility. Do not supply a guessed hostname or treat a package update as an authorization fix.
 
 The workflow needs filesystem access, Node.js, ZIP creation, and outbound HTTPS. Installing the plugin does not supply these capabilities in ChatGPT web or mobile. The skill checks local execution capabilities, not account eligibility. Plain HTML/CSS/JavaScript needs no package installation. Publication requires explicit approval of the hostname and reviewed ZIP; missing or uncertain results must not trigger automatic retries.
 

@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "insitu_home": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./server/server.mjs"],
+      "cwd": "."
+    },
     "insitu_sales": {
       "type": "http",
       "url": "https://api.insitusales.com/mcp"

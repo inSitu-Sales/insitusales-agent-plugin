@@ -15,7 +15,7 @@
       "displayName": "inSitu Sales",
       "source": "./plugins/insitu-sales",
       "description": "Run field sales, van sales, and DSD operations for wholesalers and distributors: customers, pricing, inventory, orders, and invoices, connected to your ERP.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "license": "Apache-2.0",
       "author": {
         "name": "inSitu Sales",
