@@ -40,7 +40,7 @@ npm run package:plugin
 node --test tests/main-package.test.mjs
 ```
 
-Commit `plugins/insitu-sales/server/` and `plugins/insitu-sales/ui/` with the source changes. Marketplace installation copies only the plugin directory; it does not run a build. The bundled server needs Node.js 22+ on the desktop app's PATH, but no installed npm packages. Its configuration lives in `plugins/insitu-sales/.codex-mcp.json`; sales and account authentication stay on the production MCP. A single authoring skill contains the desktop guidance as a supporting document.
+Commit `plugins/insitu-sales/server/` and `plugins/insitu-sales/ui/` with the source changes. Marketplace installation copies only the plugin directory; it does not run a build. The bundled server needs Node.js 22+ on the desktop app's PATH, but no installed npm packages. Its configuration lives in `plugins/insitu-sales/.codex-mcp.json`; sales and account authentication stay on the production MCP. The independent `insitu-workspace` skill covers the desktop interface; `insitu-storefront-authoring` covers B2B implementation and publication.
 
 After distributing and updating the main plugin, restart the desktop app, then run `node verify-install.mjs` to verify the runtime discovers `insitu_home` and its resources. Sidebar visibility must also be checked in the actual client. The separate development package below remains optional for isolated UI development.
 

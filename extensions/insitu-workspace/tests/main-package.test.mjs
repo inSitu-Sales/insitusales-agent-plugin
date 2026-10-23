@@ -16,7 +16,7 @@ test('the main plugin runs its bundled UI without the repository or node_modules
   const manifest = await readJson('.codex-plugin/plugin.json');
   const config = await readJson(manifest.mcpServers);
   assert.equal(config.mcpServers.insitu_sales.url, 'https://api.insitusales.com/mcp');
-  assert.deepEqual(await readdir(join(installed, 'skills')), ['insitu-storefront-authoring']);
+  assert.deepEqual(await readdir(join(installed, 'skills')), ['insitu-storefront-authoring', 'insitu-workspace']);
   const server = config.mcpServers.insitu_home;
   assert.equal(server.command, 'node');
   const transport = new StdioClientTransport({

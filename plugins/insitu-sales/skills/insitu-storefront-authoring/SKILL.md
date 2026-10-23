@@ -11,9 +11,9 @@ Remix maintained source into a working buyer experience. Discover capabilities f
 
 Respond in the user's language. A request to create a B2B storefront is enough to begin; no exact phrase or technical brief is necessary. Explain that you will discover the company, clarify the missing design and content choices, and show a preview before requesting publication approval. Continue from an existing brief rather than repeating answered questions. A plugin mention alone is not an instruction to build: ask which sales or storefront task the user wants.
 
-## Desktop entry point
+## Requests from the desktop interface
 
-The inSitu Sales home page can prepare a B2B creation request in the host composer. After the user sends it, follow this same workflow; users can also ask directly in chat without opening the home page or naming a skill. When the local presentation tools are available, see [desktop home and preview](workspace.md) to open the interface or display proposed changes. If those tools are unavailable, continue in chat and use supported preview links.
+A B2B request sent from a home-page suggestion starts this same authoring workflow. Users can also ask directly in chat without opening the interface or naming a skill. The separate `insitu-workspace` skill covers opening and using the home page and conversation panel; consult it when that interface is needed. Its absence does not block authoring through chat and supported preview links.
 
 ## Set up the authoring environment
 
