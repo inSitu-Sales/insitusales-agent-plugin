@@ -1,6 +1,6 @@
 'use strict';
 const BRAND_ICON = require('./workspace-brand.cjs');
-const RESOURCE_URI = 'ui://insitu/website/v9.html';
+const RESOURCE_URI = 'ui://insitu/website/v10.html';
 const TOOL_NAME = 'openInsituWorkspace';
 const VIEWS = ['portal'];
 const text = (maxLength = 300) => ({ type: 'string', minLength: 1, maxLength });
@@ -13,7 +13,7 @@ const provenance = object({ label: text(300), coverage: choice(['complete', 'par
 const product = object({ id: text(80), name: text(180), pack: text(80), price: number, category: text(80) });
 const schemas = {
   openInsituWorkspace: object({ view: choice(VIEWS) }, []),
-  renderInsituPortalPlan: object({ title: text(180), hostname: text(253), mode: choice(['create', 'improve']), changes: array(text(300), 20), preview: object({ companyName: text(180), currency, categories: array(text(80), 20), products: array(product, 40), style: choice(['light', 'dark', 'compact']) }, ['companyName', 'currency', 'categories', 'products']), previewUrl: text(2000), artifact: object({ sha256: { type: 'string', pattern: '^[a-f0-9]{64}$' }, sizeBytes: { type: 'integer', minimum: 1, maximum: 1e9 } }), source: provenance }, ['title', 'hostname', 'mode', 'changes', 'source']),
+  renderInsituPortalPlan: object({ title: text(180), hostname: { ...text(253), description: 'Optional registered hostname. Omit when company discovery returns no storefront address; never invent one for a preview.' }, mode: choice(['create', 'improve']), changes: array(text(300), 20), preview: object({ companyName: text(180), currency, categories: array(text(80), 20), products: array(product, 40), style: choice(['light', 'dark', 'compact']) }, ['companyName', 'currency', 'categories', 'products']), previewUrl: text(2000), artifact: object({ sha256: { type: 'string', pattern: '^[a-f0-9]{64}$' }, sizeBytes: { type: 'integer', minimum: 1, maximum: 1e9 } }), source: provenance }, ['title', 'mode', 'changes', 'source']),
 };
 const descriptions = {
   openInsituWorkspace: 'Use this when the user asks to open inSitu Sales or create or redesign their B2B website. Launch the inSitu Sales home page with suggested prompts for customers, orders, invoices, sales insights, catalog lookup and website redesign, or open its preview beside the conversation. Selecting a card adds a suggestion to the native chat composer without sending. The user edits and sends it there. The app has no custom chat input. This does not build or publish the site.',
@@ -42,7 +42,7 @@ function validatePayload(name, args) {
   validate(schemas[name], args);
   if (args.currency) { try { new Intl.NumberFormat('en', { style: 'currency', currency: args.currency }).format(1); } catch { throw new Error('Invalid currency'); } }
   if (name === 'renderInsituPortalPlan') {
-    if (!/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i.test(args.hostname)) throw new Error('Use a storefront hostname without a path');
+    if (args.hostname !== undefined && !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i.test(args.hostname)) throw new Error('Use a storefront hostname without a path');
     if (args.previewUrl) { const url = new URL(args.previewUrl); if (url.protocol !== 'https:' || url.username || url.password) throw new Error('Preview link must use HTTPS without credentials'); }
   }
   return args;

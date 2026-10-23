@@ -32,3 +32,14 @@ test('unknown resources cannot expose files, and a new account starts empty', ()
   assert.throws(() => a.read('file:///etc/passwd'));
   assert.deepEqual(a.read(extension.RESOURCE_URI).contents[0]._meta.ui.csp, { connectDomains: [], resourceDomains: [] });
 });
+
+
+test('a new-company preview does not require or invent a hostname', () => {
+  const workspace = extension.createWorkspaceExtension('<!doctype html>');
+  const { hostname: _hostname, ...plan } = fixtures.portal;
+  const result = workspace.call('renderInsituPortalPlan', plan);
+  assert.equal(result.isError, undefined);
+  assert.equal(result.structuredContent.data.hostname, undefined);
+  assert.equal(result.structuredContent.data.title, plan.title);
+  assert.equal(workspace.call('renderInsituPortalPlan', { ...plan, hostname: 'invalid' }).isError, true);
+});

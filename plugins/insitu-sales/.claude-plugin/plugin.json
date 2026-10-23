@@ -1,7 +1,7 @@
 {
   "name": "insitu-sales",
   "description": "Run field sales, van sales, and DSD operations for wholesalers and distributors: customers, pricing, inventory, orders, and invoices, connected to your ERP.",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": {
     "name": "inSitu Sales",
     "url": "https://www.insitusales.com/"
