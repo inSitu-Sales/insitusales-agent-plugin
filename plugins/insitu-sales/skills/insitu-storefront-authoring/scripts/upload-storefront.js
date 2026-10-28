@@ -54,7 +54,7 @@ async function prepareArchive(path) {
 /** Pin the destination and exact artifact before sending the grant outside this process.
  * Keep this helper standalone so skill bundles need neither backend imports nor account credentials.
  */
-function validateGrant(grant, bytes) {
+function validatePreparedGrant(grant, artifact) {
   if (
     !grant ||
     grant.uploadUrl !== UPLOAD_URL ||
@@ -69,7 +69,7 @@ function validateGrant(grant, bytes) {
   if (!(Date.parse(grant.expiresAt) > Date.now())) {
     throw Error("Upload authorization expired");
   }
-  if (grant.size !== bytes.length || createHash("sha256").update(bytes).digest("hex") !== grant.digest) {
+  if (grant.size !== artifact.size || artifact.digest !== grant.digest) {
     throw Error("ZIP does not match upload authorization");
   }
 }
@@ -101,7 +101,38 @@ function uploadFailure(failureStage, httpStatus = null, code = null) {
 /** Return only a recognized outcome for this artifact; never echo a server payload containing secrets.
  * Unexpected responses remain uncertain, not permission to submit the upload again.
  */
+const PUBLIC_FAILURES = {
+  PUBLICATION_UNCONFIRMED: "The server could not confirm publication. The website may have changed.",
+  PUBLICATION_UNAVAILABLE: "The publication service is unavailable.",
+  UPLOAD_AUTHORIZATION_INVALID: "The upload authorization has expired, was already used, or is invalid.",
+  PUBLICATION_FORBIDDEN: "The account is not allowed to publish this storefront.",
+  INVALID_ARCHIVE: "The ZIP or manifest is invalid. Check index.html at the ZIP root and the 10 MiB limit.",
+  PUBLICATION_REJECTED: "The server rejected the publication request or storefront configuration.",
+};
+function safeRequestId(value) {
+  return typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value)
+    ? value
+    : null;
+}
+function throwPublicationFailure(status, data) {
+  const detail = data?.error;
+  if (
+    status >= 400 &&
+    detail &&
+    Object.hasOwn(PUBLIC_FAILURES, detail.code) &&
+    ["authorization", "validation", "upload", "request"].includes(detail.stage) &&
+    ["unknown", "not_started"].includes(detail.outcome)
+  ) {
+    const error = uploadFailure(detail.stage, status);
+    error.message = PUBLIC_FAILURES[detail.code];
+    error.publicationCode = detail.code;
+    error.outcome = detail.outcome;
+    error.requestId = safeRequestId(detail.requestId);
+    throw error;
+  }
+}
 function publicationResult(status, data, grant) {
+  throwPublicationFailure(status, data);
   const outcomes = {
     200: ["active", ["complete"]],
     202: ["activation_pending", ["verification"]],
@@ -130,7 +161,8 @@ function publicationResult(status, data, grant) {
 function sendUpload(transport, grant, upload) {
   return new Promise((resolve, reject) => {
     let httpStatus = null;
-    const fail = (stage, error) => reject(uploadFailure(stage, httpStatus, error?.code));
+    let requestId = null;
+    const fail = (stage, error) => reject(Object.assign(uploadFailure(stage, httpStatus, error?.code), { requestId }));
     const request = transport.request(
       UPLOAD_URL,
       {
@@ -143,6 +175,7 @@ function sendUpload(transport, grant, upload) {
       },
       (response) => {
         httpStatus = response.statusCode;
+        requestId = safeRequestId(response.headers?.["x-request-id"]);
         const chunks = [];
         let size = 0;
         response.on("data", (chunk) => {
@@ -168,8 +201,12 @@ function sendUpload(transport, grant, upload) {
             return;
           }
           try {
-            resolve(publicationResult(httpStatus, data, grant));
+            const result = publicationResult(httpStatus, data, grant);
+            if (requestId) result.requestId = requestId;
+
+            resolve(result);
           } catch (error) {
+            error.requestId ||= requestId;
             reject(error);
           }
         });
@@ -184,11 +221,28 @@ function sendUpload(transport, grant, upload) {
   });
 }
 async function publishArchive(path, grant, transport = https) {
-  const bytes = await readArchive(path);
-  validateGrant(grant, bytes);
+  let bytes;
+  try {
+    bytes = await readArchive(path);
+  } catch {
+    throw Object.assign(Error("The ZIP could not be read; no upload was attempted"), {
+      localBeforeSend: true,
+      outcome: "not_started",
+      failureStage: "file",
+    });
+  }
+  try {
+    validatePreparedGrant(grant, { size: bytes.length, digest: createHash("sha256").update(bytes).digest("hex") });
+  } catch {
+    throw Object.assign(
+      Error("Upload authorization is invalid, expired or does not match the ZIP; no upload was attempted"),
+      { localBeforeSend: true, outcome: "not_started", failureStage: "authorization" },
+    );
+  }
 
   return sendUpload(transport, grant, multipart(grant, bytes));
 }
+
 function checkConnection(transport = https) {
   return new Promise((resolve, reject) => {
     const signal = AbortSignal.timeout(15000);
@@ -246,9 +300,11 @@ async function main() {
 if (require.main === module) {
   main().catch((error) => {
     // Do not print wire errors, request options, server payloads or the grant.
-    process.stderr.write(`${error.message}\n`);
+    process.stderr.write(
+      `${JSON.stringify({ message: error.message, stage: error.failureStage || "local-validation", code: error.publicationCode || null, requestId: error.requestId || null, httpStatus: error.httpStatus || null, outcome: error.outcome || (error.failureStage ? "unknown" : "not_started"), nextAction: "Do not retry automatically. For uncertain publication, contact inSitu Sales support with this reference and the attempt time." })}\n`,
+    );
     process.exitCode = 1;
   });
 }
 
-module.exports = { prepareArchive, publishArchive, checkConnection };
+module.exports = { prepareArchive, publishArchive, checkConnection, validatePreparedGrant };

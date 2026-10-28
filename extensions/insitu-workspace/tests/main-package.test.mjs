@@ -27,7 +27,11 @@ test('the main plugin runs its bundled UI without the repository or node_modules
   try {
     await client.connect(transport);
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((tool) => tool.name), ['openInsituWorkspace', 'renderInsituPortalPlan']);
+    assert.deepEqual(tools.map((tool) => tool.name), ['openInsituWorkspace', 'renderInsituPortalPlan', 'prepareStorefrontRelease', 'publishStorefrontRelease', 'authorizeLocalStorefrontRelease', 'reviewStorefrontRelease', 'confirmStorefrontRelease']);
+    const blocked = await client.callTool({name:'prepareStorefrontRelease',arguments:{path:join(temporary,'missing.zip')}});
+    assert.equal(blocked.isError,true);
+    assert.equal(blocked.structuredContent.code,'LOCAL_FILE_ACCESS');
+    assert.equal(blocked.structuredContent.outcome,'not_started');
     const launcher = tools[0];
     assert.deepEqual(launcher._meta['openai/ui'].entrypoints, [{ type: 'global' }, { type: 'thread' }]);
     const result = await client.callTool({ name: launcher.name, arguments: {} });

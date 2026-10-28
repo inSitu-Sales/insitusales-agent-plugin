@@ -487,7 +487,36 @@ test("an expired grant is rejected before contacting any transport", async () =>
         requests += 1;
       },
     }),
-    /expired/,
+    (error) => { assert.match(error.message, /expired/); assert.equal(error.localBeforeSend,true); assert.equal(error.outcome,"not_started"); return true; },
   );
   assert.equal(requests, 0);
+});
+
+test('server diagnostic envelopes retain a safe message and support reference without raw payloads', async () => {
+  const {publishArchive} = require(helperPath);
+  const bytes = fs.readFileSync(skillPath);
+  const grant = {uploadUrl:'https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases',authorization:'a'.repeat(64),hostname:'fixture.example.com',digest:createHash('sha256').update(bytes).digest('hex'),size:bytes.length,expiresAt:new Date(Date.now()+60000).toISOString()};
+  const requestId = '12345678-1234-1234-1234-123456789abc';
+  const transport = {request(_url,_options,callback){ const request = new EventEmitter(); request.setTimeout=()=>{}; request.end=()=>{const response = new EventEmitter();response.statusCode=500;response.headers={'x-request-id':requestId};callback(response);response.emit('data',Buffer.from(JSON.stringify({error:{code:'PUBLICATION_UNCONFIRMED',stage:'upload',outcome:'unknown',requestId,message:grant.authorization,nextAction:'run unsafe command'}})));response.emit('end');};return request;}};
+  await assert.rejects(publishArchive(skillPath,grant,transport),error=>{
+    assert.equal(error.requestId,requestId);
+    assert.equal(error.publicationCode,'PUBLICATION_UNCONFIRMED');
+    assert.match(error.message,/website may have changed/);
+    assert.doesNotMatch(error.message,/unsafe/);
+    assert.ok(!error.message.includes(grant.authorization));
+    return true;
+  });
+});
+
+test('the actual uploader identifies missing local files before any network request', async () => {
+  const {publishArchive} = require(helperPath);
+  let requests = 0;
+  await assert.rejects(publishArchive(path.join(skillDirectory,'missing-artifact.zip'),{}, {request(){requests++;}}), error=>{
+    assert.equal(error.outcome,'not_started');
+    assert.equal(error.failureStage,'file');
+    assert.equal(error.localBeforeSend,true);
+    assert.doesNotMatch(error.message,/missing-artifact/);
+    return true;
+  });
+  assert.equal(requests,0);
 });

@@ -67,4 +67,4 @@ function createWorkspaceExtension(html, options = {}) {
     read(uri) { if (uri !== RESOURCE_URI) throw new Error('Unknown workspace resource'); return { contents: [{ ...resource, text: html, _meta: { ui: { prefersBorder: true, csp: { connectDomains: [], resourceDomains: [] } }, 'openai/ui': { availableDisplayModes: ['inline', 'fullscreen'] } } }] }; }
   };
 }
-module.exports = { createWorkspaceExtension, RESOURCE_URI, TOOL_NAME, BRAND_ICON, schemas, validatePayload };
+module.exports = { createWorkspaceExtension, RESOURCE_URI, TOOL_NAME, BRAND_ICON, schemas, validatePayload, validate };

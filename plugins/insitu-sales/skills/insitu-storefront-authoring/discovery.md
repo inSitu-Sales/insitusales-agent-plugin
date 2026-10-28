@@ -8,7 +8,7 @@
 | Production buyer GraphQL            | https://api.insitusales.com/api/v1/b2b-ecommerce/graphql                                                     |
 | Default editable source             | https://storage.googleapis.com/insitusalesfront-skin-templates/templates/default/source.tar.gz               |
 | Runtime, transport, and composition | The downloaded template's README, configuration examples, package scripts, shared client, and tests          |
-| Publication transport               | Bundled `scripts/upload-storefront.js`; invoke through Node.js and read its usage before preparing a release |
+| Publication transport               | Local `prepareStorefrontRelease` and `publishStorefrontRelease`; bundled `scripts/upload-storefront.js` when unavailable |
 
 For an explicitly selected staging or local environment, obtain its endpoint from the operator; do not derive it from a company hostname or silently switch to production. The MCP address is not the buyer GraphQL endpoint. Never forward administrator OAuth credentials to buyer commerce.
 
