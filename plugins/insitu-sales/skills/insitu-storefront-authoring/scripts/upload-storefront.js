@@ -99,7 +99,7 @@ function uploadFailure(failureStage, httpStatus = null, code = null) {
   return error;
 }
 /** Return only a recognized outcome for this artifact; never echo a server payload containing secrets.
- * Unexpected responses remain uncertain, not permission to submit the upload again.
+ * Unexpected responses remain uncertain; a deliberate retry requires fresh authorization.
  */
 const PUBLIC_FAILURES = {
   PUBLICATION_UNCONFIRMED: "The server could not confirm publication. The website may have changed.",
@@ -254,6 +254,7 @@ function checkConnection(transport = https) {
       );
       failure.failureStage = failureStage;
       failure.httpStatus = null;
+      failure.outcome = "not_started";
       failure.transportCode = transportCode;
       reject(failure);
     };
@@ -262,6 +263,15 @@ function checkConnection(transport = https) {
       const request = transport.request(UPLOAD_URL, { method: "HEAD", signal }, (response) => {
         response.on("error", fail);
         response.resume();
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          reject(Object.assign(Error("The publication service rejected the connection check. No upload was attempted."), {
+            publicationCode: "PUBLICATION_PREFLIGHT_REJECTED",
+            failureStage: "connection", outcome: "not_started",
+            httpStatus: response.statusCode,
+            requestId: safeRequestId(response.headers?.["x-request-id"]),
+          }));
+          return;
+        }
         resolve({ status: "reachable", httpStatus: response.statusCode });
       });
       request.on("error", fail);
@@ -301,7 +311,7 @@ if (require.main === module) {
   main().catch((error) => {
     // Do not print wire errors, request options, server payloads or the grant.
     process.stderr.write(
-      `${JSON.stringify({ message: error.message, stage: error.failureStage || "local-validation", code: error.publicationCode || null, requestId: error.requestId || null, httpStatus: error.httpStatus || null, outcome: error.outcome || (error.failureStage ? "unknown" : "not_started"), nextAction: "Do not retry automatically. For uncertain publication, contact inSitu Sales support with this reference and the attempt time." })}\n`,
+      `${JSON.stringify({ message: error.message, stage: error.failureStage || "local-validation", code: error.publicationCode || null, requestId: error.requestId || null, httpStatus: error.httpStatus || null, outcome: error.outcome || (error.failureStage ? "unknown" : "not_started"), nextAction: "A user-requested retry needs fresh authorization. Do not retry automatically. Contact inSitu Sales support with this reference if the problem persists." })}\n`,
     );
     process.exitCode = 1;
   });

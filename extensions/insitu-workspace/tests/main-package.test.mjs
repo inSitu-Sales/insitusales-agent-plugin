@@ -21,17 +21,26 @@ test('the main plugin runs its bundled UI without the repository or node_modules
   assert.equal(server.command, 'node');
   const transport = new StdioClientTransport({
     command: server.command, args: server.args,
-    cwd: resolve(installed, server.cwd), stderr: 'pipe',
+    cwd: resolve(installed, server.cwd), stderr: 'pipe', env: { ...process.env, PLUGIN_DATA: join(temporary,'data') },
   });
   const client = new Client({ name: 'main-package-verification', version: '1' });
   try {
     await client.connect(transport);
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((tool) => tool.name), ['openInsituWorkspace', 'renderInsituPortalPlan', 'prepareStorefrontRelease', 'publishStorefrontRelease', 'authorizeLocalStorefrontRelease', 'reviewStorefrontRelease', 'confirmStorefrontRelease']);
+    assert.deepEqual(tools.map((tool) => tool.name), ['openInsituWorkspace', 'renderInsituPortalPlan', 'prepareStorefrontRelease', 'publishStorefrontRelease', 'authorizeLocalStorefrontRelease', 'reviewStorefrontRelease', 'confirmStorefrontRelease', 'registerStorefrontProject', 'listStorefrontProjects']);
+    for (const name of ['registerStorefrontProject', 'listStorefrontProjects']) {
+      const descriptor = tools.find(tool => tool.name === name);
+      assert.equal(descriptor._meta?.ui?.resourceUri, undefined, `${name} must not launch a new UI`);
+      assert.equal(descriptor._meta?.['openai/outputTemplate'], undefined);
+    }
+    assert.deepEqual(tools.find(tool => tool.name === 'listStorefrontProjects')._meta.ui.visibility, ['model', 'app']);
     const blocked = await client.callTool({name:'prepareStorefrontRelease',arguments:{path:join(temporary,'missing.zip')}});
     assert.equal(blocked.isError,true);
     assert.equal(blocked.structuredContent.code,'LOCAL_FILE_ACCESS');
     assert.equal(blocked.structuredContent.outcome,'not_started');
+    const registered = await client.callTool({name:'registerStorefrontProject',arguments:{companyId:'1',name:'Fixture',path:temporary}});
+    assert.equal(registered.isError,undefined);
+    assert.equal(registered.structuredContent.projects.length,1);
     const launcher = tools[0];
     assert.deepEqual(launcher._meta['openai/ui'].entrypoints, [{ type: 'global' }, { type: 'thread' }]);
     const result = await client.callTool({ name: launcher.name, arguments: {} });

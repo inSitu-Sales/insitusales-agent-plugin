@@ -35,7 +35,7 @@ In Codex, mention **@inSitu Sales** and ask to create your B2B storefront in Eng
 
 Business tool definitions come from the connected remote server. The desktop presentation tools come from the bundled local MCP. If company discovery still requires a hostname, refresh the connection and test in a new conversation. The current operation accepts no identity selectors. An argument-free `Company unavailable` response is a separate backend access denial; support must verify the authenticated company and its eligibility. Do not supply a guessed hostname or treat a package update as an authorization fix.
 
-The workflow needs filesystem access, Node.js, ZIP creation, and outbound HTTPS. Installing the plugin does not supply these capabilities in ChatGPT web or mobile. The skill checks local execution capabilities, not account eligibility. Plain HTML/CSS/JavaScript needs no package installation. Publication requires explicit approval of the hostname and reviewed ZIP; missing or uncertain results must not trigger automatic retries.
+The workflow needs filesystem access, Node.js, ZIP creation, and outbound HTTPS. Installing the plugin does not supply these capabilities in ChatGPT web or mobile. The skill checks local execution capabilities, not account eligibility. Plain HTML/CSS/JavaScript needs no package installation. Publication requires explicit approval to publish the selected project to its authenticated storefront; missing or uncertain results must not trigger automatic retries.
 
 The skill is included in the public package, but the backend still enforces administrator permission and hostname ownership for publication. A locally packaged skill is not proof that an approved ChatGPT listing has imported that version.
 

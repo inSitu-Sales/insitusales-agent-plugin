@@ -14,10 +14,10 @@ const tools = [
   {
     name: "prepareStorefrontRelease",
     description:
-      "Prepare a local static ZIP and check publication connectivity from the local MCP process. Returns artifact identity for review and authorization; does not upload. Use an absolute path to the user-approved ZIP.",
-    inputSchema: object({ path: text(4096) }),
+      "Prepare a local static ZIP and check publication connectivity from the local MCP process. Returns artifact identity for review and authorization; does not upload. Use an absolute ZIP path from the selected project. Does not open a panel.",
+    inputSchema: { ...object({ path: text(4096) }), properties: { path: text(4096), projectId: { type: "string", pattern: "^[a-f0-9]{64}$" } } },
     annotations: {
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
       openWorldHint: true,
       idempotentHint: false,
@@ -26,7 +26,7 @@ const tools = [
   {
     name: "publishStorefrontRelease",
     description:
-      "Publish the exact prepared ZIP after explicit user approval of hostname and artifact. Obtain a short-lived grant from authorizeStorefrontUpload; never supply the general OAuth token. Do not repeat an uncertain attempt. Return the message, next action and support reference to the user.",
+      "Publish the prepared ZIP after explicit user approval to publish the selected project to its authenticated destination. A clear publication request is approval; do not ask again unless scope or destination changes. Obtain a short-lived grant from authorizeStorefrontUpload; never supply the general OAuth token. A user-requested retry requires fresh authorization. Return the message, next action and support reference to the user.",
     inputSchema: object({
       artifactId: text(36),
       grant: object({
@@ -49,7 +49,7 @@ const tools = [
 tools.push(
   {
     name: "authorizeLocalStorefrontRelease",
-    description: "Retain a short-lived upload grant after the user has approved the exact artifact and hostname and remote authorization has been obtained. Does not open a panel or upload. Then call reviewStorefrontRelease using only the artifact identity. Do not also call publishStorefrontRelease.",
+    description: "For explicitly requested visual sending, retain a short-lived upload grant after the user has approved publishing the selected project to its authenticated destination and remote authorization has been obtained. Does not open a panel or upload. Then call reviewStorefrontRelease using only the artifact identity. Do not also call publishStorefrontRelease.",
     inputSchema: tools[1].inputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: false },
   },
@@ -66,9 +66,9 @@ tools.push(
     annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true, idempotentHint: false },
   },
 );
-for (const tool of tools) tool._meta = { ui: { ...(tool.name === "publishStorefrontRelease" || tool.name === "authorizeLocalStorefrontRelease" ? {} : { resourceUri: RESOURCE_URI }), visibility: tool.name === "confirmStorefrontRelease" ? ["app"] : ["model"] } };
+for (const tool of tools) tool._meta = { ui: { ...(tool.name === "reviewStorefrontRelease" ? { resourceUri: RESOURCE_URI } : {}), visibility: tool.name === "confirmStorefrontRelease" ? ["app"] : ["model"] } };
 const support =
-  "Contact inSitu Sales support with the reference, hostname, ZIP digest and attempt time. Do not retry automatically; support must check an uncertain publication first.";
+  "You can request another upload with fresh authorization. If the problem persists, contact inSitu Sales support with the reference and attempt time.";
 function reply(data, isError = false) {
   return {
     ...(isError ? { isError: true } : {}),
@@ -84,18 +84,19 @@ function failure(error, stage, attempted, attemptId) {
     code = "INVALID_PUBLICATION_INPUT";
     message = "The publication input or authorization is invalid or expired.";
     nextAction =
-      "Check the prepared artifact and request fresh authorization for the approved ZIP if no earlier upload is uncertain. No upload was attempted.";
+      "Check the prepared artifact and request fresh authorization for the approved ZIP. No upload was attempted.";
   } else if (stage === "file") {
-    code = "LOCAL_FILE_ACCESS";
+    code = ["EACCES", "EPERM"].includes(error.code) ? "LOCAL_PERMISSION_DENIED" : "LOCAL_FILE_ACCESS";
     message =
       "The local MCP could not read the ZIP. It must be a regular file within the 10 MiB limit.";
     nextAction =
       "Verify the ZIP path and file permissions. If the app denies file access, grant access only to the artifact location when permitted, then prepare again. No upload was attempted.";
   } else if (stage === "connection") {
-    code = "PUBLICATION_CONNECTION_FAILED";
-    message = "The local MCP could not reach the publication service.";
-    nextAction =
-      "Check network connectivity and app network permissions. Request narrowly scoped access when supported; if policy denies it, stop and contact support. No upload was attempted.";
+    code = error.publicationCode || "PUBLICATION_CONNECTION_FAILED";
+    message = error.httpStatus ? "The publication service rejected the connection check. No upload was attempted." : "The local MCP could not reach the publication service.";
+    nextAction = error.httpStatus
+      ? "Review the HTTP status and request reference with support. No upload was attempted. Do not change DNS or hosting to work around this response."
+      : "Check network connectivity and app network permissions. Request narrowly scoped access when supported; if policy denies it, stop and contact support. No upload was attempted.";
   } else if (error.publicationCode) {
     code = error.publicationCode;
     message = error.message;
@@ -125,9 +126,10 @@ function failure(error, stage, attempted, attemptId) {
     true,
   );
 }
-function createPublicationTools(helper = uploader) {
+function createPublicationTools(helper = uploader, registry) {
   const prepared = new Map();
   const attempts = new Set();
+  const inFlight = new Set();
   return {
     tools,
     handles: (name) => tools.some((tool) => tool.name === name),
@@ -136,6 +138,20 @@ function createPublicationTools(helper = uploader) {
       let stage = "input";
       let attempted = false;
       let publicationKey;
+      let savedArtifactId;
+      let linkedProjectId;
+      let saveWarning;
+      async function remember(result) {
+        if (savedArtifactId && registry) {
+          try { await registry.recordResult(savedArtifactId, { ...result, hostname: result.hostname || args.grant?.hostname }); }
+          catch { saveWarning = "The local record could not be updated. Keep this result for reference."; }
+        }
+        if (!savedArtifactId && linkedProjectId && registry) {
+          try { await registry.recordEvent(linkedProjectId, attemptId, { ...result, attemptId }); }
+          catch { saveWarning = "The local record could not be updated. Keep this result for reference."; }
+        }
+        return { ...result, ...(saveWarning ? { saveWarning } : {}) };
+      }
       try {
         const tool = tools.find((tool) => tool.name === name);
         if (!tool) throw new Error("Invalid tool");
@@ -145,12 +161,13 @@ function createPublicationTools(helper = uploader) {
           if (!artifact?.grant) throw new Error("No reviewed authorization");
           const grant = artifact.grant;
           delete artifact.grant;
+          artifact.visualConsumed = true;
           return this.call("publishStorefrontRelease", { artifactId: args.artifactId, grant });
         }
         if (name === "authorizeLocalStorefrontRelease") {
           stage = "authorization";
           const artifact = prepared.get(args.artifactId);
-          if (!artifact || artifact.grant || attempts.has(`${args.grant.hostname}:${artifact.digest}`)) throw new Error("Prepare a fresh review");
+          if (!artifact || artifact.visualConsumed || artifact.grant || (inFlight.has(args.grant.hostname) || attempts.has(args.grant.authorization))) throw new Error("Prepare a fresh review");
           uploader.validatePreparedGrant(args.grant, artifact);
           artifact.grant = { ...args.grant };
           return reply({ status: "authorized", artifactId: args.artifactId, message: "Authorization retained locally. Call reviewStorefrontRelease with this artifactId to open the upload panel." });
@@ -164,7 +181,7 @@ function createPublicationTools(helper = uploader) {
         }
         if (name === "prepareStorefrontRelease") {
           if (
-            Object.keys(args).some((k) => k !== "path") ||
+            Object.keys(args).some((k) => !["path", "projectId"].includes(k)) ||
             typeof args.path !== "string" ||
             !isAbsolute(args.path)
           )
@@ -176,24 +193,40 @@ function createPublicationTools(helper = uploader) {
               },
               true,
             );
+          if (args.projectId) {
+            try {
+              if (!registry) throw new Error("Project storage unavailable");
+              await registry.get(args.projectId);
+              linkedProjectId = args.projectId;
+            } catch { saveWarning = "The local project reference is unavailable. ZIP preparation can continue without saving it."; }
+          }
+          await remember({status:"preparing",stage:"file",outcome:"not_started",message:"Preparing the storefront files."});
           stage = "file";
           const artifact = await helper.prepareArchive(args.path);
           stage = "connection";
           await helper.checkConnection();
           if (prepared.size >= 100)
-            return reply(
+            return reply(await remember(
               {
+                stage: "preparation",
+                attemptId,
                 code: "PREPARATION_LIMIT",
                 message:
                   "Too many prepared artifacts in this session. Finish the current publication before starting more.",
                 outcome: "not_started",
-              },
+              }),
               true,
             );
           const artifactId = randomUUID();
-          prepared.set(artifactId, { ...artifact, path: args.path });
+          prepared.set(artifactId, { ...artifact, path: args.path, projectId: linkedProjectId });
+          if (linkedProjectId) {
+            try { await registry.recordPrepared(linkedProjectId, artifactId, { ...artifact, path: args.path }); }
+            catch { saveWarning = "The ZIP is prepared, but its local record could not be saved."; }
+          }
+          await remember({status:"prepared",stage:"preparation",outcome:"not_started",message:"Files prepared. Publication continues in the chat."});
           return reply({
             artifactId,
+            ...(saveWarning ? { saveWarning } : {}),
             filename: basename(args.path),
             ...artifact,
             status: "prepared",
@@ -216,13 +249,14 @@ function createPublicationTools(helper = uploader) {
             },
             true,
           );
-        const key = `${args.grant.hostname}:${artifact.digest}`;
-        if (attempts.has(key))
+        if (artifact.projectId) savedArtifactId = args.artifactId;
+        const key = args.grant.hostname;
+        if (inFlight.has(key) || attempts.has(args.grant.authorization))
           return reply(
             {
               code: "PUBLICATION_ALREADY_ATTEMPTED",
               message:
-                "This artifact already has a publication attempt in this session.",
+                "An upload is still running or this authorization was already used. Request fresh authorization for another attempt.",
               outcome: "unknown",
               nextAction: support,
             },
@@ -236,34 +270,38 @@ function createPublicationTools(helper = uploader) {
           args.grant.digest !== artifact.digest ||
           args.grant.size !== artifact.size
         )
-          return reply(
+          return reply(await remember(
             {
+              attemptId,
+              stage: "file",
               code: "ARTIFACT_CHANGED",
               message:
                 "The ZIP or authorization does not match the reviewed artifact. Prepare and review it again.",
               outcome: "not_started",
-            },
+            }),
             true,
           );
         stage = "authorization";
         uploader.validatePreparedGrant(args.grant, artifact);
         stage = "upload";
-        if (attempts.has(key))
+        if (inFlight.has(key) || attempts.has(args.grant.authorization))
           return reply(
             {
               code: "PUBLICATION_ALREADY_ATTEMPTED",
               message:
-                "This artifact already has a publication attempt in this session.",
+                "An upload is still running or this authorization was already used. Request fresh authorization for another attempt.",
               outcome: "unknown",
               nextAction: support,
             },
             true,
           );
         publicationKey = key;
-        attempts.add(key);
+        inFlight.add(key);
+        attempts.add(args.grant.authorization);
+        await remember({ status: "uploading", stage: "upload", outcome: "unknown", attemptId, message: "Upload started. Waiting for the publication service." });
         attempted = true;
         const result = await helper.publishArchive(artifact.path, args.grant);
-        return reply({
+        return reply(await remember({
           ...result,
           attemptId,
           message:
@@ -274,18 +312,22 @@ function createPublicationTools(helper = uploader) {
             result.status === "active"
               ? "Open the storefront and verify the agreed buyer journey."
               : support,
-        });
+        }));
       } catch (error) {
         if (
           error.localBeforeSend === true &&
           error.outcome === "not_started" &&
           ["file", "authorization"].includes(error.failureStage)
         ) {
-          if (publicationKey) attempts.delete(publicationKey);
+          if (publicationKey) attempts.delete(args.grant.authorization);
           attempted = false;
           stage = error.failureStage;
         }
-        return failure(error, stage, attempted, attemptId);
+        const result = failure(error, stage, attempted, attemptId);
+        result.structuredContent = await remember(result.structuredContent);
+        return result;
+      } finally {
+        if (publicationKey) inFlight.delete(publicationKey);
       }
     },
   };

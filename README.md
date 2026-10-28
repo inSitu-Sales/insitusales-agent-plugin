@@ -233,6 +233,12 @@ The chat-and-website-preview extension is in [`extensions/insitu-workspace/`](ex
 
 Before submitting an update, compare these entries with authenticated company-user discovery and verify that buyer and mobile accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skill or upload helper.
 
+### Local storefront project references
+
+The portable `plugins/insitu-sales/plugin.json` and `mcp.json` enable Codex to provide `PLUGIN_DATA` to the local MCP process. The server stores project and artifact metadata under `PLUGIN_DATA/storefronts-v1`, outside the installed package. Hosts without this directory can still use the existing design and publication tools; saved project operations report that storage is unavailable.
+
+The B2B view refreshes local references on entry, focus, and every 15 seconds while visible. These records are not backups or authoritative deployment status. Company IDs are local labels and do not establish account access. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry is allowed after an unconfirmed result and requires fresh authorization; uploads are never retried automatically. Removing local data loses these references, so users may need to register their folders again.
+
 ## Legal
 
 Privacy policy and terms are available at:

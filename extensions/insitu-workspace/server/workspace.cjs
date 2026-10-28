@@ -1,6 +1,6 @@
 'use strict';
 const BRAND_ICON = require('./workspace-brand.cjs');
-const RESOURCE_URI = 'ui://insitu/website/v10.html';
+const RESOURCE_URI = 'ui://insitu/website/v16.html';
 const TOOL_NAME = 'openInsituWorkspace';
 const VIEWS = ['portal'];
 const text = (maxLength = 300) => ({ type: 'string', minLength: 1, maxLength });

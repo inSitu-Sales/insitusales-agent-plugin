@@ -28,13 +28,13 @@ const suggestions = [
     prompt: 'Help me find products and check their current prices and available inventory. Ask me which products or category to look up and which customer or warehouse applies.',
   },
   {
-    title: 'Redesign your B2B eCommerce storefront', icon: GlobeHemisphereWest, color: 'rose',
+    action: 'b2b', title: 'Your B2B eCommerce storefront', icon: GlobeHemisphereWest, color: 'rose',
     description: 'Create a B2B storefront or improve the one you have.',
     prompt: 'Help me create my B2B storefront with inSitu Sales. Guide me step by step and show me a preview',
   },
 ];
 
-export function Home({ ready, drafting, status, onChoose }) {
+export function Home({ ready, drafting, status, onChoose, onOpenStorefront }) {
   return <main className="home">
     <div className="home-intro">
       <span className="home-eyebrow">AI FOR WHOLESALE DISTRIBUTION</span>
@@ -42,7 +42,7 @@ export function Home({ ready, drafting, status, onChoose }) {
       <p>Look up customer accounts, prepare orders and invoices, and check inventory.<br className="home-desktop-break"/> Improve your B2B eCommerce storefront—all through inSitu Sales.</p>
     </div>
     <section className="suggestions" aria-label="Things you can do with inSitu Sales">
-      {suggestions.map(({ icon: Icon, ...suggestion }) => <button key={suggestion.title} type="button" className={`suggestion ${suggestion.color}`} onClick={() => onChoose(suggestion.prompt)} disabled={!ready || drafting}>
+      {suggestions.map(({ icon: Icon, ...suggestion }) => <button key={suggestion.title} type="button" className={`suggestion ${suggestion.color}`} onClick={() => suggestion.action === 'b2b' ? onOpenStorefront() : onChoose(suggestion.prompt)} disabled={suggestion.action !== 'b2b' && (!ready || drafting)}>
         <span className="suggestion-icon"><Icon size={23} weight="regular"/></span>
         <span className="suggestion-copy"><strong>{suggestion.title}</strong><span>{suggestion.description}</span></span>
         <ArrowUpRight className="suggestion-arrow" size={16}/>

@@ -27,7 +27,7 @@ test('backend registration preserves legacy tools, scopes display results, and o
       Server: FakeServer, readFileSync: () => '<!doctype html><title>Workspace</title>', join, __dirname: '/mcp',
       createWorkspaceExtension: extension.createWorkspaceExtension,
       jwt: { verify: (token) => ({ company_id: token === 'account-two' ? 2 : 1 }) }, CONFIG: { jwt_encryption: 'test-only' },
-      isPublicationPilot: () => false, storefrontQueries: {}, storefrontMutations: {}, storefrontActions: {}, storefrontTools: new Set(),
+      isPublicationUser: () => false, storefrontQueries: {}, storefrontMutations: {}, storefrontActions: {}, storefrontTools: new Set(),
       DEFAULT_ALLOWED_QUERY_FIELDS: ['getAllCustomer'], DEFAULT_ALLOWED_MUTATION_FIELDS: ['createOrUpdateOrder'], DEFAULT_ALLOWED_OPERATION_TYPES: ['query', 'mutation'],
       schema: {}, MCP_NAME: 'test', MCP_VERSION: '1', MCP_SERVER_INSTRUCTIONS: 'test',
       ListToolsRequestSchema: 'list', CallToolRequestSchema: 'call', ListResourcesRequestSchema: 'resources', ReadResourceRequestSchema: 'read',

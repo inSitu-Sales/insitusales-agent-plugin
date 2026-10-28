@@ -1,0 +1,157 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, writeFile, rm, readFile, readdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+test('projects survive a new server instance, remain company-scoped and detect changed or missing ZIPs', async t => {
+  const { createProjectRegistry } = require('../server/projects.cjs');
+  const root = await mkdtemp(join(tmpdir(), 'insitu-registry-'));
+  t.after(() => rm(root, {recursive:true, force:true}));
+  const directory = join(root, 'design'); await mkdir(directory);
+  const registry = createProjectRegistry(join(root, 'data'));
+  const project = await registry.register({companyId:'11533', companyName:'Example company', name:'Store', path:directory});
+  const other = await registry.register({companyId:'42', name:'Other', path:directory});
+  assert.notEqual(project.id, other.id);
+  const path = join(directory, 'store.zip'); await writeFile(path, 'zip');
+  const digest = createHash('sha256').update('zip').digest('hex');
+  await registry.recordPrepared(project.id, 'artifact-1', {path,digest,size:3});
+  await registry.recordResult('artifact-1', {status:'active',hostname:'store.example.com',url:'https://store.example.com',authorization:'secret'});
+  const restarted = createProjectRegistry(join(root, 'data'));
+  let saved = (await restarted.list()).find(p => p.id === project.id);
+  assert.equal(saved.companyName, 'Example company');
+  assert.equal(saved.latestRelease.fileState, 'available');
+  assert.equal(saved.latestRelease.result.status, 'active');
+  const releaseFiles = await readdir(join(root,'data','storefronts-v1','releases'));
+  assert.doesNotMatch(await readFile(join(root,'data','storefronts-v1','releases',releaseFiles[0]),'utf8'), /secret|authorization/);
+  await writeFile(path,'ZIP');
+  saved = (await restarted.list()).find(p => p.id === project.id);
+  assert.equal(saved.latestRelease.fileState,'changed');
+  await rm(path);
+  assert.equal((await restarted.list()).find(p => p.id === project.id).latestRelease.fileState,'missing');
+});
+test('concurrent registry instances do not overwrite other projects or release records', async t => {
+  const { createProjectRegistry } = require('../server/projects.cjs');
+  const root = await mkdtemp(join(tmpdir(),'insitu-registry-'));
+  t.after(() => rm(root,{recursive:true,force:true}));
+  const a=createProjectRegistry(join(root,'data')), b=createProjectRegistry(join(root,'data'));
+  const projects=await Promise.all([a.register({companyId:'1',name:'A',path:root}),b.register({companyId:'2',name:'B',path:root})]);
+  assert.equal((await a.list()).length,2);
+  await assert.rejects(a.recordPrepared('../escape','x',{path:'/tmp/x',digest:'a'.repeat(64),size:1}));
+  assert.notEqual(projects[0].id,projects[1].id);
+});
+test('missing managed storage reports unavailability rather than using the plugin package', async () => {
+  const { createProjectRegistry } = require('../server/projects.cjs');
+  await assert.rejects(createProjectRegistry('').list(),/PLUGIN_DATA/);
+});
+test('publication saves an uncertain outcome without restoring authorization after restart', async t => {
+  const { createProjectRegistry } = require('../server/projects.cjs');
+  const { createPublicationTools } = require('../server/publication.cjs');
+  const root=await mkdtemp(join(tmpdir(),'insitu-registry-'));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  const registry=createProjectRegistry(join(root,'data'));
+  const project=await registry.register({companyId:'1',name:'Store',path:root});
+  const helper={prepareArchive:async()=>({digest:'a'.repeat(64),size:3}),checkConnection:async()=>{},publishArchive:async()=>{throw Error('secret-token');}};
+  const api=createPublicationTools(helper,registry);
+  const prepared=(await api.call('prepareStorefrontRelease',{path:join(root,'store.zip'),projectId:project.id})).structuredContent;
+  const grant={uploadUrl:'https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases',authorization:'b'.repeat(64),hostname:'store.example.com',digest:prepared.digest,size:3,expiresAt:new Date(Date.now()+60000).toISOString()};
+  await api.call('authorizeLocalStorefrontRelease',{artifactId:prepared.artifactId,grant});
+  const result=await api.call('confirmStorefrontRelease',{artifactId:prepared.artifactId});
+  assert.equal(result.structuredContent.outcome,'unknown');
+  const saved=(await createProjectRegistry(join(root,'data')).list())[0];
+  assert.equal(saved.lastPublication.outcome,'unknown');
+  assert.equal(saved.lastPublication.hostname,'store.example.com');
+  assert.doesNotMatch(JSON.stringify(saved),/secret-token|"authorization":|"expiresAt":/);
+  const restarted=createPublicationTools(helper,registry);
+  assert.equal((await restarted.call('confirmStorefrontRelease',{artifactId:prepared.artifactId})).isError,true);
+  await api.call('prepareStorefrontRelease',{path:join(root,'next.zip'),projectId:project.id});
+  assert.equal((await registry.list())[0].lastPublication.outcome,'unknown');
+});
+test('corrupted metadata is reported without overwriting it', async t => {
+  const { createProjectRegistry,createProjectTools }=require('../server/projects.cjs');
+  const root=await mkdtemp(join(tmpdir(),'insitu-registry-'));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  const registry=createProjectRegistry(root);
+  const project=await registry.register({companyId:'1',name:'Store',path:root});
+  const path=join(root,'storefronts-v1','projects',project.id+'.json');
+  await writeFile(path,'broken');
+  const result=await createProjectTools(registry).call('listStorefrontProjects');
+  assert.equal(result.isError,true);
+  assert.equal(await readFile(path,'utf8'),'broken');
+});
+test('unavailable noncritical storage does not block ZIP preparation', async () => {
+  const {createPublicationTools}=require('../server/publication.cjs');
+  let reads=0;
+  const api=createPublicationTools({prepareArchive:async()=>{reads++;return {digest:'a'.repeat(64),size:3};},checkConnection:async()=>{}},
+    {get:async()=>{throw Object.assign(Error('private path'),{code:'EACCES'});}});
+  const result=await api.call('prepareStorefrontRelease',{path:'/tmp/store.zip',projectId:'a'.repeat(64)});
+  assert.equal(result.isError,undefined);
+  assert.equal(result.structuredContent.status,'prepared');
+  assert.match(result.structuredContent.saveWarning,/local project/);
+  assert.equal(reads,1);
+  assert.doesNotMatch(JSON.stringify(result),/private path/);
+});
+test('unknown schema versions are rejected without rewriting future records', async t => {
+  const {createProjectRegistry}=require('../server/projects.cjs');
+  const root=await mkdtemp(join(tmpdir(),'insitu-registry-version-'));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  const registry=createProjectRegistry(root);
+  const project=await registry.register({companyId:'1',name:'Store',path:root});
+  const path=join(root,'storefronts-v1','projects',project.id+'.json');
+  const current=JSON.parse(await readFile(path,'utf8'));
+  assert.equal(current.version,1);
+  const future=JSON.stringify({...current,version:2,newField:'preserve'});
+  await writeFile(path,future);
+  await assert.rejects(registry.list(),/Unsupported local record version/);
+  assert.equal(await readFile(path,'utf8'),future);
+});
+
+test('tools persist preparation failures and full diagnostics without an agent status call', async t => {
+  const {createProjectRegistry}=require('../server/projects.cjs');
+  const {createPublicationTools}=require('../server/publication.cjs');
+  const root=await mkdtemp(join(tmpdir(),'insitu-feedback-'));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  const registry=createProjectRegistry(join(root,'data'));
+  const project=await registry.register({companyId:'1',name:'Store',path:root});
+  const api=createPublicationTools({prepareArchive:async()=>{throw Error('private filesystem detail');}},registry);
+  await api.call('prepareStorefrontRelease',{path:join(root,'store.zip'),projectId:project.id});
+  const result=(await createProjectRegistry(join(root,'data')).list())[0].lastPublication;
+  assert.equal(result.code,'LOCAL_FILE_ACCESS');
+  assert.equal(result.stage,'file');
+  assert.equal(result.outcome,'not_started');
+  assert.ok(result.message); assert.ok(result.nextAction); assert.ok(result.attemptId);
+  assert.doesNotMatch(JSON.stringify(result),/private filesystem detail/);
+});
+
+test('a later failure preserves the last confirmed deployment and copies safe diagnostic fields', async t => {
+  const {createProjectRegistry}=require('../server/projects.cjs');
+  const root=await mkdtemp(join(tmpdir(),'insitu-feedback-'));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  const registry=createProjectRegistry(join(root,'data'));
+  const project=await registry.register({companyId:'1',name:'Store',path:root});
+  await registry.recordPrepared(project.id,'release',{path:join(root,'store.zip'),digest:'a'.repeat(64),size:3});
+  await registry.recordResult('release',{status:'active',hostname:'store.example.com'});
+  await registry.recordResult('release',{code:'SERVER_ERROR',outcome:'unknown',httpStatus:500,transportCode:'ETIMEDOUT',message:'Service unavailable',nextAction:'Retry',stage:'upload',requestId:'req-1',authorization:'secret'});
+  const saved=(await registry.list())[0];
+  assert.equal(saved.lastConfirmedPublication.hostname,'store.example.com');
+  assert.equal(saved.lastPublication.httpStatus,500);
+  assert.equal(saved.lastPublication.transportCode,'ETIMEDOUT');
+  assert.equal(saved.lastPublication.message,'Service unavailable');
+  assert.doesNotMatch(JSON.stringify(saved),/secret|authorization/);
+});
+
+test('preparation capacity failures replace pending activity with a definite outcome', async t => {
+ const {createProjectRegistry}=require('../server/projects.cjs');
+ const {createPublicationTools}=require('../server/publication.cjs');
+ const root=await mkdtemp(join(tmpdir(),'insitu-limit-'));t.after(()=>rm(root,{recursive:true,force:true}));
+ const registry=createProjectRegistry(join(root,'data'));
+ const project=await registry.register({companyId:'1',name:'Store',path:root});
+ const api=createPublicationTools({prepareArchive:async()=>({digest:'a'.repeat(64),size:3}),checkConnection:async()=>{}},registry);
+ for(let i=0;i<100;i++) await api.call('prepareStorefrontRelease',{path:join(root,'store.zip')});
+ const result=await api.call('prepareStorefrontRelease',{path:join(root,'store.zip'),projectId:project.id});
+ assert.equal(result.structuredContent.code,'PREPARATION_LIMIT');
+ assert.equal((await registry.list())[0].activity.code,'PREPARATION_LIMIT');
+ assert.equal((await registry.list())[0].activity.outcome,'not_started');
+});

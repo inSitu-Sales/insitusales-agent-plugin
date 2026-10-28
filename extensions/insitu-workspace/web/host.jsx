@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AppBridge, PostMessageTransport } from '@modelcontextprotocol/ext-apps/app-bridge';
 import { applyDocumentTheme, McpUiMessageRequestSchema } from '@modelcontextprotocol/ext-apps';
+import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { OpenAIMessageParamsSchema } from '@openai/mcp-extensions/app';
 import { ArrowUp } from '@phosphor-icons/react';
 import { fixtures } from './fixtures.mjs';
@@ -47,6 +48,16 @@ function ChatPreview() {
         return {};
       }
       return respond(text);
+    });
+    host.setRequestHandler(CallToolRequestSchema, async ({ params }) => {
+      if (params.name !== 'listStorefrontProjects') return { isError: true, content: [{ type: 'text', text: 'This simulator does not execute publication tools.' }] };
+      return { content: [], structuredContent: { kind: 'storefrontProjects', projects: [{
+        id: 'sample-project', name: 'Sample storefront', companyId: 'demo', companyName: 'Sample company',
+        path: '/sample/storefront', folderState: new URLSearchParams(window.location.search).get('scenario') === 'permission' ? 'unavailable' : 'available',
+        latestRelease: { path: '/sample/storefront/dist.zip', size: 245760, fileState: 'available' },
+        lastConfirmedPublication: {status:'active',hostname:'store.example.com',recordedAt:'2026-10-28T19:27:00Z'},
+        lastPublication: new URLSearchParams(window.location.search).get('scenario') === 'permission' ? {code:'LOCAL_PERMISSION_DENIED',outcome:'not_started',stage:'file',transportCode:'EACCES',message:'Permission denied reading the local archive.',attemptId:'demo-permission-14',recordedAt:new Date().toISOString()} : new URLSearchParams(window.location.search).get('scenario') === 'error' ? {code:'PUBLICATION_UNAVAILABLE',httpStatus:500,outcome:'not_started',stage:'request',message:'The publication service is unavailable.',nextAction:'Retry from chat.',requestId:'demo-request-42',attemptId:'demo-attempt-12',recordedAt:new Date().toISOString()} : new URLSearchParams(window.location.search).get('scenario') === 'unknown' ? {code:'PUBLICATION_UNCONFIRMED',outcome:'unknown',stage:'timeout',message:'The upload outcome could not be confirmed.',attemptId:'demo-attempt-13',recordedAt:new Date().toISOString()} : { status: 'active', hostname: 'store.example.com', recordedAt: '2026-10-28T19:27:00Z' },
+      }] } };
     });
     host.onopenlink = async () => ({ isError: true });
     host.oninitialized = async () => { await host.sendToolInput({ arguments: { view: 'portal' } }); if (!sidebar) await render(); setReady(true); };

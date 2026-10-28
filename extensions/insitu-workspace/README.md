@@ -80,3 +80,11 @@ For native acceptance, run an authenticated staging backend with that flag enabl
 No hosted authoring service, production deployment, real mutation testing or publication is included. The existing local authoring workflow is the path for creating or improving an actual website.
 
 [Extension reference](https://developers.openai.com/plugins/build/extensions) · [MCP UI](https://developers.openai.com/plugins/build/chatgpt-ui) · [Connect and test](https://developers.openai.com/plugins/deploy/connect-chatgpt)
+
+### Publication feedback
+
+The local tools record preparation and publication activity in PLUGIN_DATA without an agent status-update call. Version-1 records gain optional diagnostic fields and retain the last confirmed publication separately. The project screen reads these records, displays safe server messages and correlation IDs, and copies an allowlisted support summary. Credentials, raw server payloads, and file contents are excluded.
+
+Recorded activity is not a live status stream. Preparation or upload activity older than three minutes is shown as unconfirmed. Remote authentication and grant-issuance errors remain in chat because they do not pass through the local tool.
+
+For local visual checks, use `/sidebar?scenario=error` and `/sidebar?scenario=unknown` on the preview server. These are simulated results and never call the publication service.

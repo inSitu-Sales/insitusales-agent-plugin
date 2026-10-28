@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-test("local publication uses exact prepared identity and refuses repeated uncertain writes", async () => {
+test("local publication uses exact prepared identity and allows a deliberate retry with fresh authorization after an uncertain result", async () => {
   const { createPublicationTools } = require("../server/publication.cjs");
   let uploads = 0;
   const helper = {
@@ -37,6 +37,9 @@ test("local publication uses exact prepared identity and refuses repeated uncert
   const repeated = await api.call("publishStorefrontRelease", args);
   assert.equal(repeated.isError, true);
   assert.equal(uploads, 1);
+  const retry = await api.call("publishStorefrontRelease", { ...args, grant: { ...args.grant, authorization: "c".repeat(64) } });
+  assert.equal(retry.structuredContent.outcome, "unknown");
+  assert.equal(uploads, 2);
 });
 test("local preparation explains file permission failure without exposing paths or attempting upload", async () => {
   const { createPublicationTools } = require("../server/publication.cjs");
@@ -48,7 +51,7 @@ test("local preparation explains file permission failure without exposing paths 
   const result = await api.call("prepareStorefrontRelease", {
     path: "/private/file",
   });
-  assert.equal(result.structuredContent.code, "LOCAL_FILE_ACCESS");
+  assert.equal(result.structuredContent.code, "LOCAL_PERMISSION_DENIED");
   assert.equal(result.structuredContent.outcome, "not_started");
   assert.doesNotMatch(JSON.stringify(result), /\/private\/file/);
 });
@@ -245,4 +248,60 @@ test('a visual review cannot change destination and expiry is rechecked at send 
     assert.equal(expired.structuredContent.outcome,'not_started');
     assert.equal(uploads,0);
   } finally { Date.now=original; }
+});
+
+test("visual upload can be reviewed again with a fresh grant after an unknown outcome", async () => {
+  const { createPublicationTools } = require("../server/publication.cjs");
+  let uploads = 0;
+  const api = createPublicationTools({
+    prepareArchive: async () => ({digest: "a".repeat(64), size: 12}),
+    checkConnection: async () => ({}),
+    publishArchive: async () => { if (++uploads === 1) throw Error("timeout"); return {status:"active"}; },
+  });
+  const {artifactId} = (await api.call("prepareStorefrontRelease", {path:"/tmp/store.zip"})).structuredContent;
+  const grant = {uploadUrl:"https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases", authorization:"b".repeat(64), hostname:"fixture.example.com",digest:"a".repeat(64),size:12,expiresAt:new Date(Date.now()+60000).toISOString()};
+  await api.call("authorizeLocalStorefrontRelease", {artifactId, grant});
+  assert.equal((await api.call("confirmStorefrontRelease", {artifactId})).structuredContent.outcome,"unknown");
+  assert.equal((await api.call("authorizeLocalStorefrontRelease", {artifactId, grant})).isError,true);
+  assert.equal((await api.call("authorizeLocalStorefrontRelease", {artifactId, grant:{...grant,authorization:"c".repeat(64)}})).isError,true);
+  const retryId = (await api.call("prepareStorefrontRelease", {path:"/tmp/store.zip"})).structuredContent.artifactId;
+  assert.equal((await api.call("authorizeLocalStorefrontRelease", {artifactId:retryId, grant:{...grant,authorization:"c".repeat(64)}})).isError,undefined);
+  assert.equal((await api.call("confirmStorefrontRelease", {artifactId})).isError,true);
+  assert.equal((await api.call("reviewStorefrontRelease", {artifactId:retryId})).structuredContent.status,"ready");
+  assert.equal((await api.call("confirmStorefrontRelease", {artifactId:retryId})).structuredContent.status,"active");
+  assert.equal(uploads,2);
+});
+
+test("preparation and direct publication do not request a new visual panel", () => {
+  const { createPublicationTools } = require("../server/publication.cjs");
+  const api = createPublicationTools({});
+  for (const name of ["prepareStorefrontRelease", "publishStorefrontRelease", "authorizeLocalStorefrontRelease", "confirmStorefrontRelease"]) {
+    assert.equal(api.tools.find(tool => tool.name === name)._meta.ui.resourceUri, undefined, name);
+  }
+  assert.ok(api.tools.find(tool => tool.name === "reviewStorefrontRelease")._meta.ui.resourceUri);
+});
+
+test("failed preflight persists a diagnostic and cannot produce a publishable artifact", async () => {
+  const { createPublicationTools } = require("../server/publication.cjs");
+  for (const detail of [
+    {failureStage:"network",transportCode:"ENOTFOUND"},
+    {failureStage:"connection",publicationCode:"PUBLICATION_PREFLIGHT_REJECTED",httpStatus:503,requestId:"fixture-request"},
+  ]) {
+    const events = [];
+    let uploads = 0;
+    const api = createPublicationTools({
+      prepareArchive:async()=>({digest:"a".repeat(64),size:12}),
+      checkConnection:async()=>{throw Object.assign(Error("private detail"),detail)},
+      publishArchive:async()=>{uploads++},
+    }, {get:async()=>({}),recordEvent:async(_project,_attempt,result)=>events.push(result)});
+    const result = await api.call("prepareStorefrontRelease", {path:"/tmp/store.zip",projectId:"a".repeat(64)});
+    assert.equal(result.isError,true);
+    assert.equal(result.structuredContent.outcome,"not_started");
+    assert.equal(result.structuredContent.artifactId,undefined);
+    assert.equal(events.at(-1).code,detail.publicationCode || "PUBLICATION_CONNECTION_FAILED");
+    assert.equal(events.at(-1).requestId,detail.requestId || null);
+    assert.equal(events.at(-1).transportCode,detail.transportCode || null);
+    assert.equal(uploads,0);
+    assert.doesNotMatch(JSON.stringify(result),/private detail/);
+  }
 });
