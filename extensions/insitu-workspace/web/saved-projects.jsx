@@ -54,31 +54,36 @@ export function SavedProjects({ app, ready, drafting, onChoose, revision, emptyC
       const result = project.activity || project.lastPublication;
       const state = publicationState(result);
       const confirmed = project.lastConfirmedPublication || (project.lastPublication?.status === 'active' ? project.lastPublication : null);
-      const hostname = result?.hostname || confirmed?.hostname;
+      const hostname = confirmed?.hostname;
       const url = hostname ? safePreviewUrl(`https://${hostname}`) : null;
       const trouble = ['error','warning'].includes(state.tone);
       const Icon = state.busy ? LoaderCircle : state.tone === 'success' ? CheckCircle2 : AlertTriangle;
       return <article className={"storefront-project state-"+state.tone} key={project.id}>
-        <header className="storefront-project-heading"><h1>{project.companyName || project.name}</h1><p>{project.name}</p>{url && <a href={url} onClick={e=>{e.preventDefault();open(url);}}>{hostname}<ExternalLink size={16}/></a>}</header>
-        <section className={'publication-feedback tone-'+state.tone} aria-label="Estado de publicación" aria-live="polite">
-          <div className="feedback-title"><Icon size={46} weight="duotone" aria-hidden="true" className={state.busy ? 'status-spinner' : ''}/><h2>{state.title}</h2></div>
-          <p>{state.description}</p>
-          {result?.recordedAt && <p className="feedback-time">Último estado recibido · {new Date(result.recordedAt).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}</p>}
-          {trouble && result?.message && <p className="service-message"><strong>Respuesta del servicio:</strong> {result.message}</p>}
+        <header className="storefront-project-heading"><h1>{project.companyName || project.name}</h1>{project.companyName && <p>{project.name}</p>}</header>
+        <section className="confirmed-publication" aria-label="Última publicación confirmada">
+          <div><span className="publication-label">ÚLTIMA PUBLICACIÓN CONFIRMADA</span><h2>{confirmed ? 'Publicación confirmada' : 'Aún sin publicación confirmada'}</h2>
+          {confirmed && <p>{new Date(confirmed.recordedAt).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}</p>}
+          {hostname && <p className="publication-domain">{hostname}</p>}</div>
+          {url && <button className="text-button" onClick={()=>open(url)}><ExternalLink size={17}/>Abrir tienda</button>}
         </section>
+        {result?.status !== 'active' && <section className={'publication-feedback tone-'+state.tone} aria-label="Último intento" aria-live="polite">
+          <span className="publication-label">{result ? 'ÚLTIMO INTENTO' : 'SIGUIENTE PASO'}</span>
+          <div className="feedback-title"><Icon size={26} weight="duotone" aria-hidden="true" className={state.busy ? 'status-spinner' : ''}/><h2>{state.title}</h2></div>
+          <p>{state.description}</p>
+          {result?.recordedAt && <p className="feedback-time">{new Date(result.recordedAt).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}</p>}
+        </section>}
         {project.folderState !== 'available' && <p className="error">La carpeta no está disponible. Pide al agente que localice el proyecto desde el chat.</p>}
         <div className="project-actions">
-          {url && <button className={state.tone === 'success' || state.tone === 'warning' ? 'review-button' : 'text-button'} onClick={()=>open(url)}><ExternalLink size={17}/>Abrir tienda</button>}
-          {!trouble && <button className="text-button" disabled={!ready || drafting || state.busy} onClick={()=>request(project,'design')}><Pencil size={17}/>Editar diseño</button>}
-          <button className={state.tone === 'error' || !url ? 'review-button' : 'text-button'} disabled={!ready || drafting || state.busy || (state.action !== 'diagnose' && project.folderState !== 'available')} onClick={()=>request(project,state.action === 'diagnose' ? 'diagnose' : 'publish')}><Upload size={17}/>{state.action === 'diagnose' ? 'Resolver en el chat' : trouble ? 'Pedir reintento en el chat' : confirmed ? 'Publicar cambios' : 'Publicar tienda'}</button>
-          {trouble && <button className="secondary-button" onClick={()=>copy(project,result)}><Copy size={20}/>Copiar diagnóstico</button>}
+          <button className="review-button" disabled={!ready || drafting || state.busy || (state.action !== 'diagnose' && project.folderState !== 'available')} onClick={()=>request(project,state.action === 'diagnose' ? 'diagnose' : 'publish')}><Upload size={17}/>{state.action === 'diagnose' ? 'Resolver en el chat' : trouble ? 'Reintentar desde el chat' : confirmed ? 'Publicar cambios' : 'Publicar tienda'}</button>
+          <button className="text-button" disabled={!ready || drafting || state.busy} onClick={()=>request(project,'design')}><Pencil size={17}/>Editar diseño</button>
         </div>
-        <p className="action-help">Las solicitudes de edición y publicación continúan en el chat.</p>
-        {confirmed && result?.status !== 'active' && <p className="last-confirmed"><CheckCircle2 size={18}/>Última publicación confirmada · {new Date(confirmed.recordedAt).toLocaleString()}</p>}
-        {trouble && <section className="support-summary"><h3>Detalles para soporte</h3><p>Si el problema persiste, comparte el diagnóstico con soporte de inSitu.</p><dl>{result.httpStatus && <><dt>HTTP</dt><dd>{result.httpStatus}</dd></>}{result.transportCode && <><dt>Conexión</dt><dd>{result.transportCode}</dd></>}<dt>Código</dt><dd>{result.code || (result.httpStatus ? 'HTTP '+result.httpStatus : 'Sin código recibido')}</dd><dt>Request ID</dt><dd>{result.requestId || 'No recibido del servidor'}</dd><dt>Attempt ID</dt><dd>{result.attemptId || 'No disponible'}</dd></dl></section>}
-        {result && <details className="project-details"><summary>{trouble ? 'Ver detalles técnicos' : 'Detalles de la última actividad'}</summary><pre className="support-json">{JSON.stringify(supportDetails(project,result),null,2)}</pre>{!trouble && <button className="text-button" onClick={()=>copy(project,result)}><Copy size={16}/>Copiar diagnóstico</button>}</details>}
+        <p className="action-help">Estas acciones preparan una solicitud en el chat. Envíala para continuar.</p>
+        <p className="record-note">Estado guardado en este dispositivo; no es una comprobación en vivo del sitio.</p>
+        {result && <details className="project-details support-summary"><summary>Detalles para soporte</summary>
+          <dl>{Object.entries({ 'Resultado': state.title, 'Mensaje del servicio': result.message, 'Destino del intento': result.hostname, 'Código': result.code, 'HTTP': result.httpStatus, 'Conexión': result.transportCode, 'Request ID': result.requestId, 'Attempt ID': result.attemptId }).filter(([,value])=>value != null).map(([label,value])=><React.Fragment key={label}><dt>{label}</dt><dd>{String(value)}</dd></React.Fragment>)}</dl>
+          <button className="text-button support-copy" onClick={()=>copy(project,result)}><Copy size={16}/>Copiar diagnóstico</button>
+        </details>}
         <details className="project-details"><summary>Carpeta del proyecto</summary><p className="project-path">{project.path}</p><p>Guardada en este dispositivo. No es una copia de seguridad.</p>{release && <p>Último archivo: {release.path.split(/[\\/]/).pop()} · {release.fileState === 'available' ? 'Disponible' : 'Necesita prepararse de nuevo'}</p>}</details>
-        {trouble && <button className="text-button" disabled={!ready || drafting || state.busy} onClick={()=>request(project,'design')}><Pencil size={17}/>Editar diseño</button>}
       </article>;
     })}
     <p className="copy-notice" role="status">{notice}</p>
