@@ -39,6 +39,12 @@ Every storefront must include separate Privacy Policy (Legal) and Terms & Condit
 
 Keep both routes and links present during loading, missing content, and read failures. Show an explicit unavailable state and deliberate retry after a failed read. Treat missing, empty, or unreadable company policies as blockers to publication readiness, not permission to remove the views or declare a blank page complete. Verify both documents, direct navigation/reload, keyboard access, and mobile readability before publication. A working template does not establish legal compliance.
 
+## Required account activation
+
+Every storefront must preserve the invitation activation page, including remixes and existing projects. Read [account activation](activation.md) when adding or adapting it. Reuse the maintained client and normal buyer session flow; keep invitation verification available before sign-in. A restyle must not remove this entry point. If the connected schema lacks activation, report that deployment gap rather than substituting a legacy API.
+
+Custom frontend pages need no backend route list. Verify direct navigation and reload through the supported publication workflow, while preserving static file responses. A hosting fallback loads the application; the storefront still owns its pages and its view for unknown routes.
+
 ## Discover before building
 
 Use [service discovery](discovery.md) for introspection and descriptions. Follow only the operations and related types needed by the brief, including arguments, defaults, nullability, and deprecations. Optional fields do not become mandatory interface features. Schema availability is not authorization or proof of configured behavior.
