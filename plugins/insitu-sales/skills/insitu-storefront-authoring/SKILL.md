@@ -1,6 +1,6 @@
 ---
 name: insitu-storefront-authoring
-description: Use when creating, remixing, or revising a static inSitu B2B buyer storefront for mobile and desktop, including requests such as "create my B2B", "online store", "crear mi B2B", "tienda online", or "catálogo online".
+description: Use when creating, remixing, or revising a static inSitu B2B buyer storefront for mobile, desktop, or an inSitu white-label app, including requests such as "create my B2B", "online store", "crear mi B2B", "tienda online", or "catálogo online".
 ---
 
 # Author an inSitu buyer storefront
@@ -56,6 +56,10 @@ Distinguish unsupported schema, omitted selections, unavailable data, and denied
 Use the [maintained skin source](templates.md), not a new commerce implementation. Preserve the shared commerce workflows; remix routes, composition, content, and styling through the supported authoring interfaces. Read the downloaded README, package scripts, configuration examples, and relevant tests before choosing technologies or commands.
 
 Keep the template's tested authentication, caching, branding, privacy, and checkout behavior. A restyle does not authorize policy changes. Compare its GraphQL documents with the connected schema before building; source compatibility is not established by download success. Build configuration is public, never a place for credentials or private data.
+
+## Support white-label apps
+
+The Capacitor app lives in the separate `st_white_label_b2becommerce` repository. Storefronts consume its SDK through `window.insituStoreNative`; preserve the maintained skin's shared native adapter during remixes. Read [native app integration](native.md) when targeting a white-label app, adding barcode scanning or notifications, or investigating native compatibility. Keep permission requests and buyer/device association in the SDK and shared session adapter, rather than implementing them in each skin.
 
 ## Review and publish deliberately
 
