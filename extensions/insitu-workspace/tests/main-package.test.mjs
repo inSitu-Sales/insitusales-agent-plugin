@@ -5,7 +5,6 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { fixtures } from '../web/fixtures.mjs';
 
 test('the main plugin runs its bundled UI without the repository or node_modules', async (t) => {
   const temporary = await mkdtemp(join(tmpdir(), 'insitu-plugin-'));
@@ -27,13 +26,13 @@ test('the main plugin runs its bundled UI without the repository or node_modules
   try {
     await client.connect(transport);
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((tool) => tool.name), ['openInsituWorkspace', 'renderInsituPortalPlan', 'prepareStorefrontRelease', 'publishStorefrontRelease', 'authorizeLocalStorefrontRelease', 'reviewStorefrontRelease', 'confirmStorefrontRelease', 'registerStorefrontProject', 'listStorefrontProjects']);
+    assert.deepEqual(tools.map((tool) => tool.name), ['openInsituWorkspace', 'prepareStorefrontRelease', 'publishStorefrontRelease', 'registerStorefrontProject', 'listStorefrontProjects']);
     for (const name of ['registerStorefrontProject', 'listStorefrontProjects']) {
       const descriptor = tools.find(tool => tool.name === name);
       assert.equal(descriptor._meta?.ui?.resourceUri, undefined, `${name} must not launch a new UI`);
       assert.equal(descriptor._meta?.['openai/outputTemplate'], undefined);
     }
-    assert.deepEqual(tools.find(tool => tool.name === 'listStorefrontProjects')._meta.ui.visibility, ['model', 'app']);
+    assert.deepEqual(tools.find(tool => tool.name === 'listStorefrontProjects')._meta.ui.visibility, ['model']);
     const blocked = await client.callTool({name:'prepareStorefrontRelease',arguments:{path:join(temporary,'missing.zip')}});
     assert.equal(blocked.isError,true);
     assert.equal(blocked.structuredContent.code,'LOCAL_FILE_ACCESS');
@@ -42,16 +41,13 @@ test('the main plugin runs its bundled UI without the repository or node_modules
     assert.equal(registered.isError,undefined);
     assert.equal(registered.structuredContent.projects.length,1);
     const launcher = tools[0];
-    assert.deepEqual(launcher._meta['openai/ui'].entrypoints, [{ type: 'global' }, { type: 'thread' }]);
+    assert.equal(launcher._meta['openai/ui'], undefined);
     const result = await client.callTool({ name: launcher.name, arguments: {} });
     assert.equal(result.isError, undefined);
     const resource = await client.readResource({ uri: launcher._meta.ui.resourceUri });
     assert.equal(resource.contents[0].mimeType, 'text/html;profile=mcp-app');
-    assert.match(resource.contents[0].text, /Help me create my B2B storefront with inSitu Sales/);
+    assert.match(resource.contents[0].text, /Help me create my B2B portal with inSitu Sales/);
     assert.doesNotMatch(resource.contents[0].text, /Local sidebar simulator|localhost:4317|__INSITU_LOGO__/);
-    const preview = await client.callTool({ name: 'renderInsituPortalPlan', arguments: fixtures.portal });
-    assert.equal(preview.isError, undefined);
-    assert.equal(preview.structuredContent.data.hostname, fixtures.portal.hostname);
-    assert.equal(preview.structuredContent.scope.companyId, null);
+
   } finally { await client.close(); await transport.close(); }
 });

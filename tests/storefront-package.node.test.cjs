@@ -92,10 +92,8 @@ test("the package keeps buyer commerce separate from administrator authorization
   const skill = fs.readFileSync(skillPath, "utf8");
   assert.match(skill, /public storefront GraphQL endpoint/);
   assert.ok(skill.includes("not through MCP tools"));
-  assert.ok(
-    skill.includes("Never request/export the general plugin OAuth token"),
-  );
-  assert.ok(skill.includes("do not retry automatically"));
+  assert.match(skill, /Never request(?:\/| or )export the general plugin OAuth token/);
+  assert.match(skill, /do not retry automatically/i);
   assert.match(skill, /protected local channel/);
   assert.doesNotMatch(skill, /graphql_(query|mutation)_b2b/);
   assert.doesNotMatch(skill, /testomer|testuser@test\.com|localhost:80/);
@@ -105,10 +103,12 @@ test("publication guidance checks helper connectivity before requesting a grant"
   const skill = fs.readFileSync(skillPath, "utf8");
   const publication = skill.split("## Review and publish deliberately\n")[1];
   assert.match(publication, /node .*--check-connection/);
-  assert.ok(
-    publication.indexOf("--check-connection") <
-      publication.indexOf("request authorization for that artifact"),
-  );
+  const helperFallback = publication.slice(publication.indexOf("If local publication tools are unavailable"));
+  const connectionCheck = helperFallback.indexOf("--check-connection");
+  const authorizationRequest = helperFallback.indexOf("request artifact-scoped authorization using authorizeStorefrontUpload");
+  assert.ok(connectionCheck >= 0, "The helper fallback must check connectivity");
+  assert.ok(authorizationRequest >= 0, "The helper fallback must request artifact-scoped authorization");
+  assert.ok(connectionCheck < authorizationRequest, "Check connectivity before requesting authorization");
   assert.match(
     publication,
     /same Node\.js executable and execution permissions/,
@@ -316,8 +316,16 @@ test("all MCP configurations retain the production server", () => {
   }
 });
 
-for (const outcome of ["reachable", "blocked"]) {
-  test(`the standalone connection-check command is ${outcome} without reading a ZIP or grant`, () => {
+for (const scenario of [
+  { outcome: "reachable", httpStatus: 204 },
+  { outcome: "rejected", httpStatus: 302 },
+  { outcome: "rejected", httpStatus: 401 },
+  { outcome: "rejected", httpStatus: 500 },
+  { outcome: "blocked", transportCode: "ENOTFOUND" },
+]) {
+  const { outcome, httpStatus, transportCode } = scenario;
+  test(`the standalone connection check reports ${httpStatus || transportCode} as ${outcome} without reading a ZIP or grant`, () => {
+    const requestId = "12345678-1234-1234-1234-123456789abc";
     const preload = `
       import https from 'node:https';
       import assert from 'node:assert/strict';
@@ -331,42 +339,40 @@ for (const outcome of ["reachable", "blocked"]) {
         const request = new EventEmitter();
         request.end = (...args) => {
           assert.equal(args.length, 0);
-          ${
-            outcome === "reachable"
-              ? "callback(Object.assign(new EventEmitter(), { statusCode: 500, resume() {} }));"
-              : "request.emit('error', Object.assign(Error('private-wire-details'), { code: 'ENOTFOUND' }));"
-          }
+          ${httpStatus
+            ? `callback(Object.assign(new EventEmitter(), { statusCode: ${httpStatus}, headers: {'x-request-id': '${requestId}'}, resume() {} }));`
+            : `request.emit('error', Object.assign(Error('private-wire-details'), { code: '${transportCode}' }));`}
         };
         return request;
       };
     `;
     const result = spawnSync(
       process.execPath,
-      [
-        "--import",
-        `data:text/javascript,${encodeURIComponent(preload)}`,
-        helperPath,
-        "--check-connection",
-      ],
+      ["--import", `data:text/javascript,${encodeURIComponent(preload)}`, helperPath, "--check-connection"],
       { encoding: "utf8", input: "not-a-grant-do-not-read", timeout: 5000 },
     );
     assert.equal(result.error, undefined);
     assert.equal(result.status, outcome === "reachable" ? 0 : 1, result.stderr);
     if (outcome === "reachable") {
-      assert.deepEqual(JSON.parse(result.stdout), {
-        status: "reachable",
-        httpStatus: 500,
-      });
+      assert.deepEqual(JSON.parse(result.stdout), { status: "reachable", httpStatus });
       assert.equal(result.stderr, "");
     } else {
       assert.equal(result.stdout, "");
-      assert.match(result.stderr, /ENOTFOUND/);
-      assert.match(result.stderr, /no upload was attempted/i);
+      const failure = JSON.parse(result.stderr);
+      assert.equal(failure.outcome, "not_started");
+      assert.match(failure.message, /no upload was attempted/i);
+      if (outcome === "rejected") {
+        assert.equal(failure.code, "PUBLICATION_PREFLIGHT_REJECTED");
+        assert.equal(failure.stage, "connection");
+        assert.equal(failure.httpStatus, httpStatus);
+        assert.equal(failure.requestId, requestId);
+      } else {
+        assert.equal(failure.stage, "network");
+        assert.equal(failure.httpStatus, null);
+        assert.match(failure.message, /ENOTFOUND/);
+      }
     }
-    assert.doesNotMatch(
-      result.stdout + result.stderr,
-      /private-wire-details|not-a-grant-do-not-read/,
-    );
+    assert.doesNotMatch(result.stdout + result.stderr, /private-wire-details|not-a-grant-do-not-read/);
   });
 }
 

@@ -1,7 +1,7 @@
 "use strict";
 const { randomUUID } = require("node:crypto");
 const { isAbsolute, basename } = require("node:path");
-const { validate, RESOURCE_URI } = require("./workspace.cjs");
+const { validate } = require("./workspace.cjs");
 const uploader = require("../../../plugins/insitu-sales/skills/insitu-storefront-authoring/scripts/upload-storefront.js");
 const text = (maxLength) => ({ type: "string", minLength: 1, maxLength });
 const object = (properties) => ({
@@ -46,27 +46,7 @@ const tools = [
     },
   },
 ];
-tools.push(
-  {
-    name: "authorizeLocalStorefrontRelease",
-    description: "For explicitly requested visual sending, retain a short-lived upload grant after the user has approved publishing the selected project to its authenticated destination and remote authorization has been obtained. Does not open a panel or upload. Then call reviewStorefrontRelease using only the artifact identity. Do not also call publishStorefrontRelease.",
-    inputSchema: tools[1].inputSchema,
-    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: false },
-  },
-  {
-    name: "reviewStorefrontRelease",
-    description: "Show the ZIP and destination authorized by authorizeLocalStorefrontRelease. Does not upload. The user can send the ZIP from this panel; do not also call publishStorefrontRelease.",
-    inputSchema: object({ artifactId: text(36) }),
-    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: true },
-  },
-  {
-    name: "confirmStorefrontRelease",
-    description: "Send the reviewed ZIP using the authorization retained by this local MCP. Called by the publication panel after the user presses Send ZIP. Never automatically retry.",
-    inputSchema: object({ artifactId: text(36) }),
-    annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true, idempotentHint: false },
-  },
-);
-for (const tool of tools) tool._meta = { ui: { ...(tool.name === "reviewStorefrontRelease" ? { resourceUri: RESOURCE_URI } : {}), visibility: tool.name === "confirmStorefrontRelease" ? ["app"] : ["model"] } };
+for (const tool of tools) tool._meta = { ui: { visibility: ['model'] } };
 const support =
   "You can request another upload with fresh authorization. If the problem persists, contact inSitu Sales support with the reference and attempt time.";
 function reply(data, isError = false) {
@@ -156,29 +136,6 @@ function createPublicationTools(helper = uploader, registry) {
         const tool = tools.find((tool) => tool.name === name);
         if (!tool) throw new Error("Invalid tool");
         validate(tool.inputSchema, args);
-        if (name === "confirmStorefrontRelease") {
-          const artifact = prepared.get(args.artifactId);
-          if (!artifact?.grant) throw new Error("No reviewed authorization");
-          const grant = artifact.grant;
-          delete artifact.grant;
-          artifact.visualConsumed = true;
-          return this.call("publishStorefrontRelease", { artifactId: args.artifactId, grant });
-        }
-        if (name === "authorizeLocalStorefrontRelease") {
-          stage = "authorization";
-          const artifact = prepared.get(args.artifactId);
-          if (!artifact || artifact.visualConsumed || artifact.grant || (inFlight.has(args.grant.hostname) || attempts.has(args.grant.authorization))) throw new Error("Prepare a fresh review");
-          uploader.validatePreparedGrant(args.grant, artifact);
-          artifact.grant = { ...args.grant };
-          return reply({ status: "authorized", artifactId: args.artifactId, message: "Authorization retained locally. Call reviewStorefrontRelease with this artifactId to open the upload panel." });
-        }
-        if (name === "reviewStorefrontRelease") {
-          stage = "authorization";
-          const artifact = prepared.get(args.artifactId);
-          if (!artifact?.grant) throw new Error("No reviewed authorization");
-          uploader.validatePreparedGrant(artifact.grant, artifact);
-          return reply({ status: "ready", artifactId: args.artifactId, filename: basename(artifact.path), digest: artifact.digest, size: artifact.size, hostname: artifact.grant.hostname, expiresAt: artifact.grant.expiresAt, message: "Review the ZIP and destination, then send it from this panel." });
-        }
         if (name === "prepareStorefrontRelease") {
           if (
             Object.keys(args).some((k) => !["path", "projectId"].includes(k)) ||

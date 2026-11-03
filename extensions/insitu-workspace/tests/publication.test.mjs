@@ -193,92 +193,13 @@ test("remote authorization rejection retains the administrator action rather tha
   assert.match(result.structuredContent.nextAction, /company administrator/);
 });
 
-test('visual review exposes only artifact metadata and confirmation uploads once', async () => {
-  const { createPublicationTools } = require('../server/publication.cjs');
-  let uploads = 0;
-  const api = createPublicationTools({
-    prepareArchive: async () => ({ digest: 'a'.repeat(64), size: 12 }),
-    checkConnection: async () => {},
-    publishArchive: async () => { uploads++; return { status: 'active', hostname: 'fixture.example.com' }; },
-  });
-  const prepared = (await api.call('prepareStorefrontRelease', { path: '/private/site.zip' })).structuredContent;
-  const grant = { uploadUrl: 'https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases', authorization: 'b'.repeat(64), hostname: 'fixture.example.com', digest: prepared.digest, size: 12, expiresAt: new Date(Date.now()+60000).toISOString() };
-  assert.equal((await api.call('authorizeLocalStorefrontRelease', {artifactId: prepared.artifactId, grant})).isError, undefined);
-  const review = await api.call('reviewStorefrontRelease', { artifactId: prepared.artifactId });
-  assert.equal(api.tools.find(t => t.name === 'authorizeLocalStorefrontRelease')._meta.ui.resourceUri, undefined);
-  assert.equal(review.structuredContent.status, 'ready');
-  assert.equal(review.structuredContent.filename, 'site.zip');
-  assert.equal(review.structuredContent.hostname, grant.hostname);
-  assert.doesNotMatch(JSON.stringify(review), /bbbbbbbb|\/private\//);
-  assert.equal(uploads, 0);
-  assert.ok(api.tools.find(t => t.name === 'reviewStorefrontRelease')._meta.ui.resourceUri);
-  assert.deepEqual(api.tools.find(t => t.name === 'confirmStorefrontRelease')._meta.ui.visibility, ['app']);
-  const sent = await api.call('confirmStorefrontRelease', { artifactId: prepared.artifactId });
-  assert.equal(sent.structuredContent.status, 'active');
-  assert.equal(uploads, 1);
-  assert.equal((await api.call('confirmStorefrontRelease', { artifactId: prepared.artifactId })).isError, true);
-  assert.equal(uploads, 1);
-});
-
-test('visual confirmation requires an exact valid grant and never uploads an unreviewed artifact', async () => {
-  const { createPublicationTools } = require('../server/publication.cjs');
-  const api = createPublicationTools({prepareArchive: async () => ({digest:'a'.repeat(64),size:12}),checkConnection:async()=>{},publishArchive:async()=>{throw Error('must not upload')}});
-  const p=(await api.call('prepareStorefrontRelease',{path:'/tmp/site.zip'})).structuredContent;
-  assert.equal((await api.call('confirmStorefrontRelease',{artifactId:p.artifactId})).isError,true);
-  const grant={uploadUrl:'https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases',authorization:'b'.repeat(64),hostname:'fixture.example.com',digest:'c'.repeat(64),size:12,expiresAt:new Date(Date.now()+60000).toISOString()};
-  assert.equal((await api.call('authorizeLocalStorefrontRelease',{artifactId:p.artifactId,grant})).isError,true);
-  assert.equal((await api.call('confirmStorefrontRelease',{artifactId:p.artifactId})).isError,true);
-});
-
-test('a visual review cannot change destination and expiry is rechecked at send time', async () => {
-  const { createPublicationTools } = require('../server/publication.cjs');
-  let uploads = 0;
-  const api = createPublicationTools({prepareArchive:async()=>({digest:'a'.repeat(64),size:12}),checkConnection:async()=>{},publishArchive:async()=>{uploads++;return {status:'active'}}});
-  const p=(await api.call('prepareStorefrontRelease',{path:'/tmp/site.zip'})).structuredContent;
-  const grant={uploadUrl:'https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases',authorization:'b'.repeat(64),hostname:'fixture.example.com',digest:p.digest,size:12,expiresAt:new Date(Date.now()+60000).toISOString()};
-  assert.equal((await api.call('authorizeLocalStorefrontRelease',{artifactId:p.artifactId,grant})).isError,undefined);
-  assert.equal((await api.call('authorizeLocalStorefrontRelease',{artifactId:p.artifactId,grant:{...grant,hostname:'other.example.com'}})).isError,true);
-  const review=await api.call('reviewStorefrontRelease',{artifactId:p.artifactId});
-  assert.equal(review.structuredContent.hostname,grant.hostname);
-  const original=Date.now;
-  try {
-    Date.now=()=>Date.parse(grant.expiresAt)+1;
-    const expired=await api.call('confirmStorefrontRelease',{artifactId:p.artifactId});
-    assert.equal(expired.isError,true);
-    assert.equal(expired.structuredContent.outcome,'not_started');
-    assert.equal(uploads,0);
-  } finally { Date.now=original; }
-});
-
-test("visual upload can be reviewed again with a fresh grant after an unknown outcome", async () => {
-  const { createPublicationTools } = require("../server/publication.cjs");
-  let uploads = 0;
-  const api = createPublicationTools({
-    prepareArchive: async () => ({digest: "a".repeat(64), size: 12}),
-    checkConnection: async () => ({}),
-    publishArchive: async () => { if (++uploads === 1) throw Error("timeout"); return {status:"active"}; },
-  });
-  const {artifactId} = (await api.call("prepareStorefrontRelease", {path:"/tmp/store.zip"})).structuredContent;
-  const grant = {uploadUrl:"https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases", authorization:"b".repeat(64), hostname:"fixture.example.com",digest:"a".repeat(64),size:12,expiresAt:new Date(Date.now()+60000).toISOString()};
-  await api.call("authorizeLocalStorefrontRelease", {artifactId, grant});
-  assert.equal((await api.call("confirmStorefrontRelease", {artifactId})).structuredContent.outcome,"unknown");
-  assert.equal((await api.call("authorizeLocalStorefrontRelease", {artifactId, grant})).isError,true);
-  assert.equal((await api.call("authorizeLocalStorefrontRelease", {artifactId, grant:{...grant,authorization:"c".repeat(64)}})).isError,true);
-  const retryId = (await api.call("prepareStorefrontRelease", {path:"/tmp/store.zip"})).structuredContent.artifactId;
-  assert.equal((await api.call("authorizeLocalStorefrontRelease", {artifactId:retryId, grant:{...grant,authorization:"c".repeat(64)}})).isError,undefined);
-  assert.equal((await api.call("confirmStorefrontRelease", {artifactId})).isError,true);
-  assert.equal((await api.call("reviewStorefrontRelease", {artifactId:retryId})).structuredContent.status,"ready");
-  assert.equal((await api.call("confirmStorefrontRelease", {artifactId:retryId})).structuredContent.status,"active");
-  assert.equal(uploads,2);
-});
-
-test("preparation and direct publication do not request a new visual panel", () => {
-  const { createPublicationTools } = require("../server/publication.cjs");
-  const api = createPublicationTools({});
-  for (const name of ["prepareStorefrontRelease", "publishStorefrontRelease", "authorizeLocalStorefrontRelease", "confirmStorefrontRelease"]) {
-    assert.equal(api.tools.find(tool => tool.name === name)._meta.ui.resourceUri, undefined, name);
+test('publication tools are available only to the agent and never open a panel', () => {
+  const api = require('../server/publication.cjs').createPublicationTools({});
+  assert.deepEqual(api.tools.map(tool => tool.name), ['prepareStorefrontRelease', 'publishStorefrontRelease']);
+  for (const tool of api.tools) {
+    assert.equal(tool._meta.ui.resourceUri, undefined);
+    assert.deepEqual(tool._meta.ui.visibility, ['model']);
   }
-  assert.ok(api.tools.find(tool => tool.name === "reviewStorefrontRelease")._meta.ui.resourceUri);
 });
 
 test("failed preflight persists a diagnostic and cannot produce a publishable artifact", async () => {

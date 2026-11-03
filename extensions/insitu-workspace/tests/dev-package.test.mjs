@@ -34,18 +34,18 @@ test('the standalone development package launches outside the source tree and pa
   try {
     await client.connect(transport);
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 2);
+    assert.equal(tools.length, 5);
     const launcher = tools.find((tool) => tool.name === 'openInsituWorkspace');
     const logo = await readFile(new URL('../assets/insitu-mark.png', import.meta.url));
     assert.deepEqual(launcher.icons, [{ src: `data:image/png;base64,${logo.toString('base64')}`, mimeType: 'image/png', sizes: ['120x120'] }]);
     assert.deepEqual(client.getServerVersion().icons, launcher.icons);
-    assert.deepEqual(launcher._meta['openai/ui'].entrypoints, [{ type: 'global' }, { type: 'thread' }]);
+    assert.equal(launcher._meta['openai/ui'], undefined);
     const result = await client.callTool({ name: launcher.name, arguments: {} });
     assert.equal(result.isError, undefined);
     assert.equal(result.structuredContent.data, null);
     assert.equal(result.structuredContent.scope.companyId, null);
     const ui = await client.readResource({ uri: launcher._meta.ui.resourceUri });
-    assert.match(ui.contents[0].text, /Redesign your B2B eCommerce storefront/);
+    assert.match(ui.contents[0].text, /Create a B2B portal/);
     assert.doesNotMatch(ui.contents[0].text, /home-composer|insitu-prompt/);
     assert.doesNotMatch(ui.contents[0].text, /Local sidebar simulator/);
   } finally { await client.close(); await transport.close(); }

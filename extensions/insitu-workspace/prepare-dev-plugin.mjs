@@ -21,8 +21,8 @@ await build({
   banner: { js: 'import { createRequire as _createRequire } from "node:module"; const require = _createRequire(import.meta.url);' },
 });
 const presentation = {
-  displayName: 'inSitu Sales Home (Dev)', shortDescription: 'Chat with inSitu and redesign your B2B storefront.',
-  longDescription: 'Development home page paired with your existing authenticated inSitu Sales connection.',
+  displayName: 'inSitu Sales Home (Dev)', shortDescription: 'Browse inSitu Sales prompts.',
+  longDescription: 'Development prompt directory paired with your existing authenticated inSitu Sales connection.',
   developerName: 'inSitu Sales', category: 'Business & Operations', capabilities: ['MCP', 'Interactive'],
   websiteURL: 'https://www.insitusales.com/', privacyPolicyURL: 'https://www.insitusales.com/en/end-user-license-agreement/',
   termsOfServiceURL: 'https://www.insitusales.com/en/end-user-license-agreement/',

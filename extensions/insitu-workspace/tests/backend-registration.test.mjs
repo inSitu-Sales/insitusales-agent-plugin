@@ -4,7 +4,6 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { join } from 'node:path';
 import extension from '../server/workspace.cjs';
-import { fixtures } from '../web/fixtures.mjs';
 
 test('backend registration preserves legacy tools, scopes display results, and obeys the feature flag', async (t) => {
   const backendUrl = process.env.INSITU_BACKEND_ROOT
@@ -41,9 +40,9 @@ test('backend registration preserves legacy tools, scopes display results, and o
   assert.equal(disabled.handlers.has('resources'), false);
   const a = make(true)({ transportAuthToken: 'account-one' });
   const b = make(true)({ transportAuthToken: 'account-two' });
-  assert.equal((await a.handlers.get('list')()).tools.length, 4);
+  assert.equal((await a.handlers.get('list')()).tools.length, 3);
   assert.equal((await a.handlers.get('resources')()).resources[0].uri, extension.RESOURCE_URI);
-  const request = { params: { name: 'renderInsituPortalPlan', arguments: fixtures.portal } };
+  const request = { params: { name: 'openInsituWorkspace', arguments: {} } };
   assert.equal((await a.handlers.get('call')(request)).structuredContent.scope.companyId, '1');
   assert.equal((await b.handlers.get('call')(request)).structuredContent.scope.companyId, '2');
   assert.equal(graphqlCalls, 0);

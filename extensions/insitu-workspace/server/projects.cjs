@@ -13,7 +13,7 @@ const tools = [
   {name:"listStorefrontProjects",description:"Read this device's saved storefront folders and last known ZIP results. Local company labels are not authentication. Recheck files, ownership and fresh authorization before publication. Never automatically retry a saved uncertain upload.",
    inputSchema:{type:"object",properties:{},additionalProperties:false},
    annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false,idempotentHint:true},
-   _meta:{ui:{visibility:["model","app"]}}}
+   _meta:{ui:{visibility:["model"]}}}
 ];
 // Keep credentials and arbitrary response payloads out of durable display records.
 function displayResult(result) {

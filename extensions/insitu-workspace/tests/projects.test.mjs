@@ -57,15 +57,14 @@ test('publication saves an uncertain outcome without restoring authorization aft
   const api=createPublicationTools(helper,registry);
   const prepared=(await api.call('prepareStorefrontRelease',{path:join(root,'store.zip'),projectId:project.id})).structuredContent;
   const grant={uploadUrl:'https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases',authorization:'b'.repeat(64),hostname:'store.example.com',digest:prepared.digest,size:3,expiresAt:new Date(Date.now()+60000).toISOString()};
-  await api.call('authorizeLocalStorefrontRelease',{artifactId:prepared.artifactId,grant});
-  const result=await api.call('confirmStorefrontRelease',{artifactId:prepared.artifactId});
+  const result=await api.call('publishStorefrontRelease',{artifactId:prepared.artifactId,grant});
   assert.equal(result.structuredContent.outcome,'unknown');
   const saved=(await createProjectRegistry(join(root,'data')).list())[0];
   assert.equal(saved.lastPublication.outcome,'unknown');
   assert.equal(saved.lastPublication.hostname,'store.example.com');
   assert.doesNotMatch(JSON.stringify(saved),/secret-token|"authorization":|"expiresAt":/);
   const restarted=createPublicationTools(helper,registry);
-  assert.equal((await restarted.call('confirmStorefrontRelease',{artifactId:prepared.artifactId})).isError,true);
+  assert.equal((await restarted.call('publishStorefrontRelease',{artifactId:prepared.artifactId,grant})).isError,true);
   await api.call('prepareStorefrontRelease',{path:join(root,'next.zip'),projectId:project.id});
   assert.equal((await registry.list())[0].lastPublication.outcome,'unknown');
 });

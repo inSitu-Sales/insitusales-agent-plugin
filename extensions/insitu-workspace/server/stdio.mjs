@@ -8,7 +8,7 @@ import projects from './projects.cjs';
 
 // The remote connection owns account authentication; local uploads use artifact-scoped grants.
 const html = await readFile(new URL('../ui/workspace.html', import.meta.url), 'utf8');
-const workspace = extension.createWorkspaceExtension(html);
+const workspace = extension.createWorkspaceExtension(html, { entrypoints: false });
 const registry = projects.createProjectRegistry();
 const localProjects = projects.createProjectTools(registry);
 const releases = publication.createPublicationTools(undefined, registry);

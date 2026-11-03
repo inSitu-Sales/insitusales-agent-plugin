@@ -225,7 +225,7 @@ These checks cover package paths, access instructions, connection/version consis
 
 ## Chat extension development
 
-The chat-and-website-preview extension is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). It declares a native **inSitu Sales** global sidebar app and conversation-panel entrypoint using OpenAI Plugin Extensions. Users can chat with inSitu and preview website redesigns in the host. The main desktop plugin bundles its presentation MCP and HTML; maintainers rebuild both with `npm run package:plugin` in that directory and commit the generated plugin files before release. The optional remote backend integration remains behind `MCP_WORKSPACE_EXTENSION_ENABLED`; it is not needed for the bundled desktop interface.
+The prompt directory is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). Selecting a suggestion adds an editable, unsent prompt to the native chat input. The B2B group contains prompts to create a portal or send a project ZIP. The remote MCP owns the sidebar and conversation entrypoints; the local companion retains agent tools without registering another navigation entry. Rebuild the packaged HTML and local server with `npm run package:plugin` in that directory. Update and deploy the remote presentation separately through the backend release process.
 
 ## ChatGPT submission maintenance
 
@@ -237,7 +237,7 @@ Before submitting an update, compare these entries with authenticated company-us
 
 The portable `plugins/insitu-sales/plugin.json` and `mcp.json` enable Codex to provide `PLUGIN_DATA` to the local MCP process. The server stores project and artifact metadata under `PLUGIN_DATA/storefronts-v1`, outside the installed package. Hosts without this directory can still use the existing design and publication tools; saved project operations report that storage is unavailable.
 
-The B2B view refreshes local references on entry, focus, and every 15 seconds while visible. These records are not backups or authoritative deployment status. Company IDs are local labels and do not establish account access. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry is allowed after an unconfirmed result and requires fresh authorization; uploads are never retried automatically. Removing local data loses these references, so users may need to register their folders again.
+The agent can read these references through the local project tools. The prompt directory does not read or refresh them. These records are not backups or authoritative deployment status. Company IDs are local labels and do not establish account access. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry is allowed after an unconfirmed result and requires fresh authorization; uploads are never retried automatically. Removing local data loses these references, so users may need to register their folders again.
 
 ## Legal
 
