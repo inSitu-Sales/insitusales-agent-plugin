@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, ChartLineUp, GlobeHemisphereWest, Package, Receipt, ShoppingCart, Users } from '@phosphor-icons/react';
+import { ArrowUpRight, CaretDown, ChartLineUp, GlobeHemisphereWest, Package, Receipt, ShoppingCart, Users } from '@phosphor-icons/react';
 
 const suggestions = [
   {
@@ -28,13 +28,24 @@ const suggestions = [
     prompt: 'Help me find products and check their current prices and available inventory. Ask me which products or category to look up and which customer or warehouse applies.',
   },
   {
-    title: 'Redesign your B2B eCommerce storefront', icon: GlobeHemisphereWest, color: 'rose',
-    description: 'Create a B2B storefront or improve the one you have.',
-    prompt: 'Help me create my B2B storefront with inSitu Sales. Guide me step by step and show me a preview',
+    title: 'Your B2B eCommerce storefront', icon: GlobeHemisphereWest, color: 'rose',
+    description: 'Create your portal or send a ZIP for publication.',
+    prompts: [
+      {
+        title: 'Create a B2B portal',
+        description: 'Describe your store and build it with the assistant.',
+        prompt: 'Help me create my B2B portal with inSitu Sales. Guide me step by step, ask for the requirements you need, and show me a working preview. Do not publish until I ask you to.',
+      },
+      {
+        title: 'Send the project ZIP',
+        description: 'Ask the assistant to send your storefront ZIP.',
+        prompt: 'Help me send my B2B storefront ZIP for publication with inSitu Sales. Use the ZIP from this conversation, or ask me to attach it or provide its location. Verify the artifact and the destination for my authenticated company, then publish it. Explain the result and any errors in this chat.',
+      },
+    ],
   },
 ];
 
-export function Home({ ready, drafting, status, onChoose }) {
+export function Home({ ready, drafting, onChoose }) {
   return <main className="home">
     <div className="home-intro">
       <span className="home-eyebrow">AI FOR WHOLESALE DISTRIBUTION</span>
@@ -42,13 +53,24 @@ export function Home({ ready, drafting, status, onChoose }) {
       <p>Look up customer accounts, prepare orders and invoices, and check inventory.<br className="home-desktop-break"/> Improve your B2B eCommerce storefront—all through inSitu Sales.</p>
     </div>
     <section className="suggestions" aria-label="Things you can do with inSitu Sales">
-      {suggestions.map(({ icon: Icon, ...suggestion }) => <button key={suggestion.title} type="button" className={`suggestion ${suggestion.color}`} onClick={() => onChoose(suggestion.prompt)} disabled={!ready || drafting}>
+      {suggestions.map(({ icon: Icon, ...suggestion }) => suggestion.prompts ? <details className={`suggestion-group ${suggestion.color}`} key={suggestion.title}>
+        <summary className="suggestion">
+          <span className="suggestion-icon"><Icon size={23} weight="regular"/></span>
+          <span className="suggestion-copy"><strong>{suggestion.title}</strong><span>{suggestion.description}</span></span>
+          <CaretDown className="suggestion-arrow" size={16}/>
+        </summary>
+        <div className="nested-prompts">
+          {suggestion.prompts.map(item => <button key={item.title} type="button" className="nested-prompt" disabled={!ready || drafting} onClick={() => onChoose(item.prompt)}>
+            <span className="suggestion-copy"><strong>{item.title}</strong><span>{item.description}</span></span>
+            <ArrowUpRight size={16} aria-hidden="true"/>
+          </button>)}
+        </div>
+      </details> : <button key={suggestion.title} type="button" className={`suggestion ${suggestion.color}`} onClick={() => onChoose(suggestion.prompt)} disabled={!ready || drafting}>
         <span className="suggestion-icon"><Icon size={23} weight="regular"/></span>
         <span className="suggestion-copy"><strong>{suggestion.title}</strong><span>{suggestion.description}</span></span>
         <ArrowUpRight className="suggestion-arrow" size={16}/>
       </button>)}
     </section>
     <p className="home-hint">Choose an idea to add it to your chat input. Make it your own, then send.</p>
-    {status && <p className="home-status" role="status">{status}</p>}
   </main>;
 }

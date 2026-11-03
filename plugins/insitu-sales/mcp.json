@@ -1,6 +1,16 @@
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
+    "insitu_home": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "./server/server.mjs"
+      ],
+      "cwd": "./"
+    },
     "insitu_sales": {
+      "type": "streamable-http",
       "url": "https://api.insitusales.com/mcp"
     }
   }

@@ -1,16 +1,22 @@
 ---
 name: insitu-workspace
-description: Create or redesign an inSitu B2B website through conversation, using the native inSitu Sales sidebar app and conversation panel.
+description: Open or use the inSitu Sales desktop home page, sidebar app, or conversation panel. Use for interface navigation and suggested prompts; direct B2B creation or redesign requests use insitu-storefront-authoring.
 ---
 
-# Chat and redesign
+# Use the inSitu Sales interface
 
-The home page introduces capabilities with suggested prompts for customers, sales orders, invoice drafts, sales insights, catalog lookup, and website redesign. Selecting a suggestion appends an unsent draft to the regular ChatGPT/Codex composer using the native draft API. The home page has no custom chat input; the user edits and sends the request in the host composer. It is not an instruction to create a business record; the user sends the request and the normal workflow gathers the necessary details. Capabilities still depend on the authenticated account and authoring permissions.
+Use this skill when the user asks to open inSitu Sales, navigate its home page, or work with its conversation panel. Ordinary customer, order, invoice, inventory, and sales questions use the authenticated business tools directly; opening the interface is optional.
 
-The native inSitu Sales sidebar app and conversation panel both use the host conversation as the primary interface. The global entrypoint has its own conversation on desktop; the thread entrypoint uses the current conversation. Answer ordinary customer, order, invoice, and business questions using the existing authenticated tools in chat. Do not open separate sales, dashboard, or customer-management screens.
+## Open and use the home page
 
-When the user asks to create or improve their B2B website, use the packaged `insitu-storefront-authoring` skill. Keep the conversation simple: establish the intended website and changes, reuse maintained source, build a preview when execution is available, and refine it from the user's chat feedback. The authoring skill governs account eligibility, source compatibility, legal views, and publication.
+Discover `openInsituWorkspace` and call it to open the prompt directory. The remote MCP owns its sidebar and conversation entrypoints. The local companion can open the directory through a tool call but does not register another navigation entry.
 
-Discover `openInsituWorkspace` and `renderInsituPortalPlan`. The opening tool also serves the global sidebar launcher. Use the render tool to update the website preview during redesign. Do not make the user fill out a separate form or choose a workflow tab. Prefer an actual built preview URL when available; label a catalog-layout proposal as illustrative. Rendering a layout is not building or publishing a website. Do not invent access to an existing site's source.
+The directory offers prompts for customers, sales orders, invoices, sales insights, and catalog lookup. Expand the B2B group to choose between creating a portal and sending a project ZIP. Each suggestion adds an editable, unsent draft to the native chat input. The user edits and sends it there. Expanding a group does not add a prompt. Selecting a suggestion does not approve or execute its operation.
 
-The preview's Review changes action requests a review; it is not publication approval. Show the actual preview, hostname and exact prepared artifact before requesting approval to publish. If local execution or authoring permissions are unavailable, explain the specific limit and prepare the redesign brief in chat. Clients without MCP Apps UI can continue through the conversation and preview links.
+The interface does not read company data or local project records, display website previews, or run publication tools. Business operations start from the user's sent message and use the available authenticated tools. Opening the interface does not establish account identity or permission.
+
+If the host cannot insert a draft, explain the limitation. Do not submit the prompt as a fallback.
+
+## Route B2B work
+
+Use `insitu-storefront-authoring` for B2B creation, changes, source selection, verification, and ZIP publication. A direct request in chat starts the same workflow without opening the directory. Show working previews through the available browser or preview links. Report publication results and errors in the chat.

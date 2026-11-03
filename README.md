@@ -42,7 +42,7 @@ For Codex, register this repository as a plugin marketplace and install the inSi
 
 ```bash
 codex plugin marketplace add /path/to/insitusales-agent-plugin
-codex plugin add insitu-sales@insitu-sales
+codex plugin add app-6a7ca3b899bc81918a6ab1af007a82d6@insitu-sales
 ```
 
 For Claude Code, register this repository as a plugin marketplace and install the inSitu Sales plugin:
@@ -68,10 +68,10 @@ Clone this repository, then register its marketplace with Codex:
 
 ```bash
 codex plugin marketplace add /path/to/insitusales-agent-plugin
-codex plugin add insitu-sales@insitu-sales
+codex plugin add app-6a7ca3b899bc81918a6ab1af007a82d6@insitu-sales
 ```
 
-After installing, start a new Codex thread so the plugin tools are loaded.
+The desktop plugin includes a local home-page MCP and the production sales connection. Node.js 22+ must be available as `node` on the desktop app's PATH. After updating, restart the desktop app to reload navigation and start a new chat. Open **inSitu Sales** from the sidebar, or ask directly in chat to create your B2B storefront. Selecting a home-page suggestion prepares a draft in the native composer; send it to begin.
 
 ## Install In Claude Code
 
@@ -225,13 +225,19 @@ These checks cover package paths, access instructions, connection/version consis
 
 ## Chat extension development
 
-The chat-and-website-preview extension is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). It declares a native **inSitu Sales** global sidebar app and conversation-panel entrypoint using OpenAI Plugin Extensions. Users can chat with inSitu and preview website redesigns in the host. The local backend integration remains behind `MCP_WORKSPACE_EXTENSION_ENABLED` and is not evidence of production deployment.
+The prompt directory is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). Selecting a suggestion adds an editable, unsent prompt to the native chat input. The B2B group contains prompts to create a portal or send a project ZIP. The remote MCP owns the sidebar and conversation entrypoints; the local companion retains agent tools without registering another navigation entry. Rebuild the packaged HTML and local server with `npm run package:plugin` in that directory. Update and deploy the remote presentation separately through the backend release process.
 
 ## ChatGPT submission maintenance
 
 `chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. The two storefront authoring actions are available to verified company-user accounts without a company allowlist; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.
 
 Before submitting an update, compare these entries with authenticated company-user discovery and verify that buyer and mobile accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skill or upload helper.
+
+### Local storefront project references
+
+The portable `plugins/insitu-sales/plugin.json` and `mcp.json` enable Codex to provide `PLUGIN_DATA` to the local MCP process. The server stores project and artifact metadata under `PLUGIN_DATA/storefronts-v1`, outside the installed package. Hosts without this directory can still use the existing design and publication tools; saved project operations report that storage is unavailable.
+
+The agent can read these references through the local project tools. The prompt directory does not read or refresh them. These records are not backups or authoritative deployment status. Company IDs are local labels and do not establish account access. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry is allowed after an unconfirmed result and requires fresh authorization; uploads are never retried automatically. Removing local data loses these references, so users may need to register their folders again.
 
 ## Legal
 

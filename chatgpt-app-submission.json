@@ -423,7 +423,7 @@
       "user_prompt": "I am signed in. Read my company context before we discuss the storefront design. I do not know the technical hostname. Do not publish anything.",
       "file_attachment_urls": null,
       "tools_triggered": "getStorefrontCompany",
-      "expected_output": "Calls getStorefrontCompany without identity arguments and obtains the registered hostname, URL, branding, contact, links, and supported access defaults from the authenticated company. The assistant does not ask the user to supply a domain or construct one from a company name. It verifies the intended company and uses the context for the brief, not as publication approval or proof of an active release. Required local execution capabilities must be available before creating files; publication authority is enforced by the service when requested.",
+      "expected_output": "Calls getStorefrontCompany without identity arguments and obtains the authenticated company branding, contact, links, supported access defaults, and registered address when available. A company without a portal or alias returns null hostname and storefrontUrl with actionable configuration issues; the assistant continues design and source preparation without asking for or inventing a domain. Connected buyer commerce and publication wait for valid registration. Account-status, administrator-permission and connection failures are reported using their specific service messages and error codes. Company context is neither publication approval nor proof of an active release.",
       "expected_output_url": null
     },
     {

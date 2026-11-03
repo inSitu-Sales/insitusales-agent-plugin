@@ -23,8 +23,9 @@ createServer(async (request, response) => {
       response.on('close', () => { transport.close(); server.close(); });
       await server.connect(transport); await transport.handleRequest(request, response, body); return;
     }
-    if (!Object.hasOwn(files, request.url) || request.method !== 'GET') { response.writeHead(404).end(); return; }
+    const pathname = new URL(request.url, 'http://localhost').pathname;
+    if (!Object.hasOwn(files, pathname) || request.method !== 'GET') { response.writeHead(404).end(); return; }
     response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
-    response.end(await readFile(new URL(`./dist/${files[request.url]}`, import.meta.url)));
+    response.end(await readFile(new URL(`./dist/${files[pathname]}`, import.meta.url)));
   } catch { if (!response.headersSent) response.writeHead(400).end('Request could not be handled.'); }
 }).listen(port, '127.0.0.1', () => console.log(`Preview: http://127.0.0.1:${port}\nDevelopment MCP: http://127.0.0.1:${port}/mcp (presentation tools only)`));

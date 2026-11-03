@@ -20,13 +20,13 @@ try {
   const expectedLogo = await readFile(new URL('./assets/insitu-mark.png', import.meta.url));
   assert.deepEqual(launcher?.icons, [{ src: `data:image/png;base64,${expectedLogo.toString('base64')}`, mimeType: 'image/png', sizes: ['120x120'] }], 'The installed sidebar launcher must advertise the official colored logo');
   assert.deepEqual(client.getServerVersion().icons, launcher.icons, 'Server fallback and launcher icons must agree');
-  assert.deepEqual(launcher?._meta['openai/ui'].entrypoints, [{ type: 'global' }, { type: 'thread' }]);
+  assert.equal(launcher?._meta['openai/ui'], undefined, 'The local companion must not register a duplicate sidebar launcher');
   const resource = await client.readResource({ uri: launcher._meta.ui.resourceUri });
-  assert.match(resource.contents[0].text, /Redesign your B2B eCommerce storefront/);
-  assert.ok(resource.contents[0].text.includes('Help me create my B2B storefront with inSitu Sales. Guide me step by step and show me a preview'), 'The installed B2B card must use the requested prompt');
+  assert.match(resource.contents[0].text, /Create a B2B portal/);
+  assert.ok(resource.contents[0].text.includes('Help me create my B2B portal with inSitu Sales'), 'The installed B2B card must use the requested prompt');
   assert.doesNotMatch(resource.contents[0].text, /home-composer|insitu-prompt/);
   const opened = await client.callTool({ name: launcher.name, arguments: {} });
   assert.equal(opened.isError, undefined);
-  console.log('PASS: desktop runtime discovers the installed server, both native entrypoints, the official sidebar icon and the current home page.');
+  console.log('PASS: desktop runtime discovers the installed server, no duplicate local entrypoint, the official sidebar icon and the current home page.');
   console.log('A desktop app reload and visual sidebar acceptance are separate checks.');
 } finally { await client.close(); await transport.close(); }

@@ -6,9 +6,8 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { ListToolsRequestSchema, CallToolRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { readFile } from 'node:fs/promises';
 import extension from '../server/workspace.cjs';
-import { fixtures } from '../web/fixtures.mjs';
 
-test('a real MCP client discovers the UI, receives a render result, and reads bundled HTML', async () => {
+test('a real MCP client discovers the UI, opens the prompt directory, and reads bundled HTML', async () => {
   const html = await readFile(new URL('../dist/workspace.html', import.meta.url), 'utf8');
   const workspace = extension.createWorkspaceExtension(html, { companyId: 123 });
   const server = new Server({ name: 'workspace-test', version: '1' }, { capabilities: { tools: {}, resources: {} } });
@@ -21,10 +20,10 @@ test('a real MCP client discovers the UI, receives a render result, and reads bu
   try {
     await server.connect(serverTransport); await client.connect(clientTransport);
     const list = await client.listTools();
-    assert.equal(list.tools.length, 2);
+    assert.equal(list.tools.length, 1);
     assert.deepEqual(list.tools.find((tool) => tool.name === extension.TOOL_NAME)._meta['openai/ui'].entrypoints, [{ type: 'global' }, { type: 'thread' }]);
-    const result = await client.callTool({ name: 'renderInsituPortalPlan', arguments: fixtures.portal });
-    assert.equal(result.structuredContent.data.hostname, 'acme.example.com');
+    const result = await client.callTool({ name: 'openInsituWorkspace', arguments: {} });
+    assert.equal(result.structuredContent.data, null);
     assert.equal(result.structuredContent.scope.companyId, '123');
     const resources = await client.listResources();
     assert.equal(resources.resources[0].uri, extension.RESOURCE_URI);
@@ -32,7 +31,7 @@ test('a real MCP client discovers the UI, receives a render result, and reads bu
     assert.equal(resource.contents[0].mimeType, 'text/html;profile=mcp-app');
     assert.match(resource.contents[0].text, /inSitu Sales/);
     assert.doesNotMatch(resource.contents[0].text, /__INSITU_LOGO__|localhost:4317/);
-    const invalid = await client.callTool({ name: 'renderInsituPortalPlan', arguments: { ...fixtures.portal, hostname: 'invalid' } });
+    const invalid = await client.callTool({ name: 'openInsituWorkspace', arguments: { projectId: 'unavailable' } });
     assert.equal(invalid.isError, true);
     await assert.rejects(() => client.readResource({ uri: 'file:///etc/passwd' }));
   } finally { await client.close(); await server.close(); }

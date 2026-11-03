@@ -7,6 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "package:plugin": "node prepare-plugin.mjs",
     "build": "node build.mjs",
     "preview": "node preview.mjs",
     "dev": "node preview.mjs",
