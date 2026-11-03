@@ -1,8 +1,8 @@
 # Prompt directory
 
-The interface is a directory of editable prompts. It includes suggestions for customer accounts, sales orders, invoices, sales analysis, and catalog lookup. The B2B group contains **Create a B2B portal** and **Send the project ZIP**.
+The interface is a directory of editable prompts. It includes suggestions for customer accounts, sales orders, invoices, sales analysis, and catalog lookup. The B2B card opens a modal with **Create a B2B portal** and **Send the project ZIP**.
 
-Selecting a prompt adds it to the active native composer with `send: false`. The user edits and sends it. Opening the directory and expanding B2B do not call business tools. The interface does not read projects, display website previews, track publication, or send ZIP files. Business workflows run through the agent after the user sends a request.
+Selecting a prompt adds it to the active native composer with `send: false`. The user edits and sends it. Opening the directory or the B2B modal does not call business tools. Selecting a B2B prompt closes the modal. The close button, Escape, and the backdrop dismiss it without selecting a prompt. The interface does not read projects, display website previews, track publication, or send ZIP files. Business workflows run through the agent after the user sends a request.
 
 The authenticated remote MCP owns the global and thread entrypoints. The local MCP serves the same prompt directory on an explicit tool call and retains the agent's project and ZIP tools. It does not register navigation entries. This avoids two sidebar icons when both connections are installed.
 
