@@ -90,6 +90,8 @@ Reload plugins or start a new Claude Code session after installing:
 /reload-plugins
 ```
 
+The installed Claude plugin also starts the bundled local MCP for storefront ZIP preparation and publication. Node.js 22 or later must be available on PATH. ZIP operations run through chat; no visual interface is required. Local project records use Claude's persistent plugin data directory. The remote connection continues to own account sign-in and upload authorization.
+
 Claude Code can also read the shared project MCP config from `.mcp.json`.
 
 Clone this repository, then start Claude Code from the repository root:

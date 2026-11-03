@@ -27,6 +27,12 @@ The Codex desktop package includes a local companion MCP (`insitu_home`) for age
 
 The interface is a prompt directory. Its B2B group offers two suggestions: create a portal and send a project ZIP. Selecting a suggestion adds an editable, unsent draft to the native composer. It does not read projects, display website previews, or run uploads. The remote MCP owns the sidebar entrypoint; the local companion does not register a duplicate. Business tools and authentication continue through `https://api.insitusales.com/mcp`. The local MCP retains the agent's project and ZIP tools. Use `insitu-workspace` for directory navigation and `insitu-storefront-authoring` for B2B creation, verification, and publication. Clients without local execution can use the remote tools and the supported helper workflow.
 
+## Publish a ZIP from chat
+
+The Claude plugin manifest adds the local `insitu_home` MCP alongside the remote sales connection from `.mcp.json`. Claude starts the bundled server with `${CLAUDE_PLUGIN_ROOT}`; it needs Node.js 22 or later on PATH. Project and publication records use `${CLAUDE_PLUGIN_DATA}` through the server's `PLUGIN_DATA` variable, outside the installed plugin files.
+
+Ask the assistant to publish your storefront ZIP in chat. It prepares the local file, requests a temporary artifact-scoped grant through the authenticated remote connection, and sends the ZIP with the local MCP. This flow does not require a visual plugin interface or a second account sign-in. The local server does not receive the general OAuth token. Update the installed plugin and reload it before testing. File and network access remain subject to the host's permissions.
+
 ## Local storefront authoring
 
 In a coding environment that supports packaged skills, use `insitu-storefront-authoring` to create a static B2B buyer storefront. Company-user accounts can use `getStorefrontCompany` and `authorizeStorefrontUpload` without a company allowlist. Existing sales tools remain available. Call `getStorefrontCompany` without identity arguments to discover the authenticated company's registered URL and authoring context; users do not need to supply technical hostnames. The service checks current administrator permission. Registration is not proof of publication.
