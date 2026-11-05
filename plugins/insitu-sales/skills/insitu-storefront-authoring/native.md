@@ -1,37 +1,31 @@
 # Native app integration
 
-## Ownership and source
+## Ownership and delivery
 
-`st_white_label_b2becommerce` owns the Capacitor Android/iOS shell, brand selection, native plugins, Firebase client configuration, and browser SDK. It is separate from the maintained skins in `st_insitusales_b2bportal_skins` and the buyer API in `st_backend_insitusales_b2bportal`. A storefront remix normally changes only presentation in a skin.
+`st_white_label_b2becommerce` owns the Capacitor shell, native plugins, Firebase client configuration, and executable SDK. The app injects `window.insituStoreNative` at document start into its authorized storefront frame. The maintained template contains public TypeScript types and a session adapter, not a copy of the SDK implementation.
 
-Read the downloaded template's README, shared provider, native adapter, and SDK declarations before using native features. A local integration does not prove that the published source archive contains it. If those files are absent, report the compatibility gap and continue a browser preview. Do not recreate the native integration in a customer skin or invent a package name, repository URL, or API operation.
+Read the downloaded template's README, shared provider, native observer, and public types. Do not download, install, bundle, or recreate the native SDK in a customer storefront. Do not add Firebase clients, arbitrary Capacitor access, or a script URL as a fallback. A missing global in the app requires checking app version, configured origin, and injection support. An ordinary browser must remain usable without it.
 
-## Consume the shared integration
+## Consume the injected API
 
-The maintained `StoreProviders` installs the SDK when framed and connects the commerce session to native notifications. Components obtain the connected SDK from `useStoreRuntime().native`. The browser global is `window.insituStoreNative`, not `window.insituStore`. Preserve the provider and its session adapter when changing layouts.
+`StoreProviders` discovers the injected global and connects the buyer session. Components use `useStoreRuntime().native`; preserve the provider and session adapter during remixes. The global's exact name is `window.insituStoreNative`. The shared observer handles an existing global and the app's `insituStoreNativeAvailable` event. It exposes a connected SDK after the `ready` handshake confirms a supported protocol.
 
-The SDK's `ready` promise completes the native handshake and returns capabilities. Check those capabilities before exposing native actions. An ordinary browser must remain usable when the SDK or a capability is unavailable. Do not block sign-in, catalog access, or checkout on notification permission or registration.
+Check capabilities before offering native actions. For scanning, subscribe with `native.scanner.onBarcode(callback)` and call `native.scanner.start()` from a user action. Send results through the existing catalog search. `preview()` also starts scanning; `stop()` closes it. The app-owned SDK handles camera consent. Stop scanning and unsubscribe when leaving the scan view without disposing the shared SDK. Keep manual search available.
 
-For a scan button, subscribe with `native.scanner.onBarcode(callback)` and call `native.scanner.start()` from the user's action. `preview()` opens the camera preview; `stop()` closes it. The SDK and native shell handle camera permission when scanning is requested. Stop an active scan and unsubscribe when leaving the scan view. A component must not dispose the shared SDK.
+The injected SDK automatically initializes notifications after its handshake. `notifications.ready` describes native registration or permission failure; `notifications.sessionStatus` describes buyer/device association. The shared adapter supplies the active buyer session, renewed credentials, account changes, and sign-out through `notifications.setSession(...)`. Storefront authors do not implement permission requests, token storage, or backend registration. Optional `onNotification` and `onAction` listeners support presentation. Notification denial or failure must not block commerce.
 
-Notification initialization starts automatically after the handshake, including permission requests and native registration. `notifications.ready` reports registration, denial, unavailability, or an error independently of commerce. The shared session adapter calls `notifications.setSession(...)` as the buyer signs in, changes accounts, refreshes credentials, or signs out. It owns backend association and retries; skin components must not duplicate this lifecycle. Use `onNotification` or `onAction` only when the presentation needs those events, and unsubscribe when the component unmounts.
+Both platforms expose FCM tokens. The native iOS integration connects APNs registration to Firebase Messaging. Private sender credentials belong outside the storefront and native bundles; administrator OAuth is not a buyer session.
 
-Both platforms provide FCM tokens. On iOS, the native integration connects APNs registration to Firebase Messaging before exposing the FCM token. Keep Capacitor plugins and Firebase clients in the native app. Do not add them to a skin, persist tokens there, write directly to Firestore, or reuse administrator OAuth for buyer operations.
+## Existing projects and compatibility
 
-## Update the shared integration when authorized
+Legacy template 0.1.0 included an executable SDK under `src/native/sdk/`. For an existing project, preserve its skin customizations while updating the shared provider, observer, public types, and session adapter from the maintained template. Remove the old SDK runtime and import tooling. Do not replace the entire customized project. The app needs an injection-capable build; publishing new web code cannot add that native implementation to an older installed app.
 
-For work on the native/shared integration itself, inspect the native repository's README, `package.json`, `sdk/index.ts`, session types, and `white-label/` registry. Build its distributable with `npm run build:sdk`. From the maintained skins repository, import that output:
+Compatible SDK implementation updates are delivered by the app and do not require replacing the storefront's core. New methods may still require updated consumers and capability checks. Native plugin changes require a store build. OTA delivery is not configured by this integration.
 
-```sh
-yarn native:import --from <native-repository>/dist-sdk
-```
+The app registry selects the HTTPS storefront URL. The owned shell uses `capacitor://localhost` on iOS or `https://localhost` on Android and loads the storefront in a separate iframe. Preserve exact origin/direct-frame checks. Never replace this boundary with remote `server.url` or unrestricted injection.
 
-The import updates the vendored SDK, declarations, and integrity metadata together. Do not edit generated SDK files. Preserve the shared session adapter rather than adding a second initializer. A custom host without that provider needs the maintained adapter: `notifications.setSession({ endpoint, hostname, bearer, accountKey })` for the active buyer and `setSession(null)` on sign-out. Read its types and adapter before implementing this path. Derive the account key from the verified company and buyer identity; it is a local matching key, not server authorization. Never ask an author to supply a buyer bearer token.
+## Verify and publish
 
-The app's brand registry selects its HTTPS storefront URL. Use the authenticated project context and configured brand; do not hardcode another company's hostname. The owned shell runs at `capacitor://localhost` on iOS or `https://localhost` on Android and loads the storefront in a separate iframe. Preserve origin/frame checks; do not replace this boundary with remote `server.url` or expose the general native bridge to the storefront.
+Verify browser fallback, app readiness, scanning/cancellation, notification denial, account changes, and sign-out. Run the template's included checks. Report simulated native boundaries separately from physical-device testing. Verify backend schema support before claiming device association; compilation and SDK readiness do not prove FCM/APNs delivery.
 
-## Verify and report limits
-
-Check browser fallback, scan permission and cancellation, notification denial, account changes, and sign-out. Verify required buyer operations against the deployed schema before claiming backend compatibility. Missing deployed support requires an integration change, not an invented fallback endpoint.
-
-Publishing a static storefront does not build, sign, or distribute the native app. SDK readiness and compilation do not prove push delivery; report device verification separately. Pending association cleanup is held in memory and may be lost if an offline document is destroyed. Keep Firebase sender credentials outside static artifacts and native app bundles. Native builds, backend changes, and store submissions require their own authorized scope.
+Publish the compiled static storefront through the skill's supported publication workflow. Publishing does not distribute the native app. Pending association cleanup remains in document memory and may be lost during offline destruction. App builds, backend deployments, and store submissions require their authorized scope.
