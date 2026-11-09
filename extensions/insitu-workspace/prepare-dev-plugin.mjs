@@ -30,7 +30,7 @@ const presentation = {
   defaultPrompt: ['Open the inSitu Sales home page.', 'Use inSitu Sales to show my connected company and find a customer.'],
 };
 const manifest = {
-  name: 'insitu-home-dev', version: '0.4.1-dev.5', description: presentation.longDescription,
+  name: 'insitu-home-dev', version: '0.4.2-dev.1', description: presentation.longDescription,
   author: { name: 'inSitu Sales', url: 'https://www.insitusales.com/' },
 };
 // Use the compatibility layout supported by the desktop's local MCP loader.

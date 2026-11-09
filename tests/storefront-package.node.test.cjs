@@ -526,3 +526,22 @@ test('the actual uploader identifies missing local files before any network requ
   });
   assert.equal(requests,0);
 });
+
+test("plugin release versions agree across host manifests and marketplace entries", () => {
+  const portable = readJson("plugins/insitu-sales/plugin.json");
+  for (const file of [
+    "plugins/insitu-sales/.codex-plugin/plugin.json",
+    "plugins/insitu-sales/.claude-plugin/plugin.json",
+    "plugins/insitu-sales/.cursor-plugin/plugin.json",
+  ]) {
+    assert.equal(readJson(file).version, portable.version, file);
+  }
+  for (const file of [".claude-plugin/marketplace.json", ".cursor-plugin/marketplace.json"]) {
+    const marketplace = readJson(file);
+    assert.equal(marketplace.plugins[0].version, portable.version, file);
+  }
+  const extension = readJson("extensions/insitu-workspace/package.json");
+  const lock = readJson("extensions/insitu-workspace/package-lock.json");
+  assert.equal(lock.version, extension.version);
+  assert.equal(lock.packages[""].version, extension.version);
+});

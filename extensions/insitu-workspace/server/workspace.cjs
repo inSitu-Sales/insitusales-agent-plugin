@@ -1,9 +1,9 @@
 'use strict';
 const BRAND_ICON = require('./workspace-brand.cjs');
 const RESOURCE_URI = 'ui://insitu/prompts/v1.html';
-const TOOL_NAME = 'openInsituWorkspace';
+const TOOL_NAME = 'openInSituWorkspace';
 const schemas = {
-  openInsituWorkspace: {
+  openInSituWorkspace: {
     type: 'object',
     properties: { view: { type: 'string', enum: ['portal'] } },
     additionalProperties: false,

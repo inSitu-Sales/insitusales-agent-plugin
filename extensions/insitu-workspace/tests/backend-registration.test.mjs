@@ -42,7 +42,7 @@ test('backend registration preserves legacy tools, scopes display results, and o
   const b = make(true)({ transportAuthToken: 'account-two' });
   assert.equal((await a.handlers.get('list')()).tools.length, 3);
   assert.equal((await a.handlers.get('resources')()).resources[0].uri, extension.RESOURCE_URI);
-  const request = { params: { name: 'openInsituWorkspace', arguments: {} } };
+  const request = { params: { name: 'openInSituWorkspace', arguments: {} } };
   assert.equal((await a.handlers.get('call')(request)).structuredContent.scope.companyId, '1');
   assert.equal((await b.handlers.get('call')(request)).structuredContent.scope.companyId, '2');
   assert.equal(graphqlCalls, 0);

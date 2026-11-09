@@ -25,8 +25,9 @@ test('the main plugin runs its bundled UI without the repository or node_modules
   const client = new Client({ name: 'main-package-verification', version: '1' });
   try {
     await client.connect(transport);
+    assert.equal(client.getServerVersion().version, JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version);
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((tool) => tool.name), ['openInsituWorkspace', 'prepareStorefrontRelease', 'publishStorefrontRelease', 'registerStorefrontProject', 'listStorefrontProjects']);
+    assert.deepEqual(tools.map((tool) => tool.name), ['openInSituWorkspace', 'prepareStorefrontRelease', 'publishStorefrontRelease', 'registerStorefrontProject', 'listStorefrontProjects']);
     for (const name of ['registerStorefrontProject', 'listStorefrontProjects']) {
       const descriptor = tools.find(tool => tool.name === name);
       assert.equal(descriptor._meta?.ui?.resourceUri, undefined, `${name} must not launch a new UI`);

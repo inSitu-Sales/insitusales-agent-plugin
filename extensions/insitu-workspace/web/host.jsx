@@ -14,7 +14,7 @@ function PromptPreview() {
   const bridge = useRef(null);
   const composer = useRef(null);
   useEffect(() => {
-    const host = new AppBridge(null, { name: 'inSitu prompt directory preview', version: '0.4.1' }, { message: {}, experimental: { 'openai/message': {} } }, { hostContext: { theme, displayMode: 'inline' } });
+    const host = new AppBridge(null, { name: 'inSitu prompt directory preview', version: '0.4.2' }, { message: {}, experimental: { 'openai/message': {} } }, { hostContext: { theme, displayMode: 'inline' } });
     bridge.current = host;
     host.setRequestHandler(McpUiMessageRequestSchema.extend({ params: OpenAIMessageParamsSchema }), async ({ params: { content, _meta } }) => {
       const text = content.filter(block => block.type === 'text').map(block => block.text).join('\n');
@@ -26,7 +26,7 @@ function PromptPreview() {
     host.setRequestHandler(CallToolRequestSchema, async () => { throw new Error('The prompt directory must never call a business tool.'); });
     host.oninitialized = async () => {
       await host.sendToolInput({ arguments: {} });
-      await host.sendToolResult({content:[], structuredContent:{kind:'openInsituWorkspace', data:null}});
+      await host.sendToolResult({content:[], structuredContent:{kind:'openInSituWorkspace', data:null}});
     };
     host.connect(new PostMessageTransport(frame.current.contentWindow, frame.current.contentWindow));
     frame.current.src = '/widget';

@@ -5,7 +5,7 @@ import { OpenAIExtensions } from '@openai/mcp-extensions/app';
 import { draftNativePrompt } from './chat.mjs';
 import { Home } from './home.jsx';
 
-const app = new App({ name: 'inSitu Sales', version: '0.4.1' }, { availableDisplayModes: ['inline', 'fullscreen'] });
+const app = new App({ name: 'inSitu Sales', version: '0.4.2' }, { availableDisplayModes: ['inline', 'fullscreen'] });
 const extensions = new OpenAIExtensions(app);
 function applyTheme(context) {
   if (context?.theme) applyDocumentTheme(context.theme);

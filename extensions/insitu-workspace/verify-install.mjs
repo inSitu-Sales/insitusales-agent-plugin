@@ -16,7 +16,7 @@ const transport = new StdioClientTransport({ command, args, cwd, stderr: 'pipe' 
 try {
   await client.connect(transport);
   const { tools } = await client.listTools();
-  const launcher = tools.find((tool) => tool.name === 'openInsituWorkspace');
+  const launcher = tools.find((tool) => tool.name === 'openInSituWorkspace');
   const expectedLogo = await readFile(new URL('./assets/insitu-mark.png', import.meta.url));
   assert.deepEqual(launcher?.icons, [{ src: `data:image/png;base64,${expectedLogo.toString('base64')}`, mimeType: 'image/png', sizes: ['120x120'] }], 'The installed sidebar launcher must advertise the official colored logo');
   assert.deepEqual(client.getServerVersion().icons, launcher.icons, 'Server fallback and launcher icons must agree');

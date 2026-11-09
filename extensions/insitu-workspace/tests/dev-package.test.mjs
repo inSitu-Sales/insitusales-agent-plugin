@@ -24,7 +24,7 @@ test('the standalone development package launches outside the source tree and pa
   });
   try {
     await configuredClient.connect(configuredTransport);
-    const result = await configuredClient.callTool({ name: 'openInsituWorkspace', arguments: {} });
+    const result = await configuredClient.callTool({ name: 'openInSituWorkspace', arguments: {} });
     assert.equal(result.isError, undefined);
   } finally { await configuredClient.close(); await configuredTransport.close(); }
   const mapping = JSON.parse(await readFile(new URL('.app.json', root), 'utf8'));
@@ -35,7 +35,7 @@ test('the standalone development package launches outside the source tree and pa
     await client.connect(transport);
     const { tools } = await client.listTools();
     assert.equal(tools.length, 5);
-    const launcher = tools.find((tool) => tool.name === 'openInsituWorkspace');
+    const launcher = tools.find((tool) => tool.name === 'openInSituWorkspace');
     const logo = await readFile(new URL('../assets/insitu-mark.png', import.meta.url));
     assert.deepEqual(launcher.icons, [{ src: `data:image/png;base64,${logo.toString('base64')}`, mimeType: 'image/png', sizes: ['120x120'] }]);
     assert.deepEqual(client.getServerVersion().icons, launcher.icons);
