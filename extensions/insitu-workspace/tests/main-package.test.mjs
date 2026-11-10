@@ -2,25 +2,25 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cp, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-test('the main plugin runs its bundled UI without the repository or node_modules', async (t) => {
+test('the Claude companion runs its bundled UI without the repository or node_modules', async (t) => {
   const temporary = await mkdtemp(join(tmpdir(), 'insitu-plugin-'));
   t.after(() => rm(temporary, { recursive: true, force: true }));
   const installed = join(temporary, 'plugin');
   await cp(new URL('../../../plugins/insitu-sales/', import.meta.url), installed, { recursive: true });
   const readJson = async (path) => JSON.parse(await readFile(join(installed, path), 'utf8'));
-  const manifest = await readJson('.codex-plugin/plugin.json');
-  const config = await readJson(manifest.mcpServers);
+  const manifest = await readJson('.claude-plugin/plugin.json');
+  const config = await readJson('.mcp.json');
   assert.equal(config.mcpServers.insitu_sales.url, 'https://api.insitusales.com/mcp');
   assert.deepEqual(await readdir(join(installed, 'skills')), ['insitu-storefront-authoring', 'insitu-workspace']);
-  const server = config.mcpServers.insitu_home;
+  const server = manifest.mcpServers.insitu_home;
   assert.equal(server.command, 'node');
   const transport = new StdioClientTransport({
-    command: server.command, args: server.args,
-    cwd: resolve(installed, server.cwd), stderr: 'pipe', env: { ...process.env, PLUGIN_DATA: join(temporary,'data') },
+    command: server.command, args: server.args.map(arg => arg.replaceAll('${CLAUDE_PLUGIN_ROOT}', installed)),
+    cwd: installed, stderr: 'pipe', env: { ...process.env, PLUGIN_DATA: join(temporary,'data') },
   });
   const client = new Client({ name: 'main-package-verification', version: '1' });
   try {

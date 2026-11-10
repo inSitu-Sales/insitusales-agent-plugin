@@ -23,11 +23,13 @@ See the inSitu Sales privacy policy and terms: https://www.insitusales.com/en/en
 
 ## Desktop home page
 
-The Codex desktop package includes a local companion MCP (`insitu_home`) for agent tools and explicit prompt-directory calls. It requires Node.js 22 or later on the desktop app's PATH. The remote MCP serves the sidebar and conversation entrypoints. Updating the local plugin does not update the remote interface; deploy that presentation through the backend release process.
+The OpenAI package connects to the remote MCP at `https://api.insitusales.com/mcp`. The backend serves the interface, sidebar, and conversation entrypoints. The UI source remains in the plugin repository; deploy its generated presentation through the backend release process. Updating the installed plugin does not update the remote interface.
 
-The interface is a prompt directory. Its B2B group offers two suggestions: create a portal and send a project ZIP. Selecting a suggestion adds an editable, unsent draft to the native composer. It does not read projects, display website previews, or run uploads. The remote MCP owns the sidebar entrypoint; the local companion does not register a duplicate. Business tools and authentication continue through `https://api.insitusales.com/mcp`. The local MCP retains the agent's project and ZIP tools. Use `insitu-workspace` for directory navigation and `insitu-storefront-authoring` for B2B creation, verification, and publication. Clients without local execution can use the remote tools and the supported helper workflow.
+The interface is a prompt directory. Its B2B group offers two suggestions: create a portal and send a project ZIP. Selecting a suggestion adds an editable, unsent draft to the native composer. It does not read projects, display website previews, or run uploads. Business tools and authentication use the remote connection. Use `insitu-workspace` for directory navigation and `insitu-storefront-authoring` for B2B creation, verification, and publication. Clients with local file access, Node.js, and outbound HTTPS can use the bundled upload helper without a local MCP. Clients without local execution cannot publish a ZIP from a local path.
 
 ## Publish a ZIP from chat
+
+In OpenAI, `insitu-storefront-authoring` handles requests to publish an existing storefront ZIP. It prepares the file and checks connectivity with its bundled Node.js script, obtains authorization through the remote MCP, and uploads with the script. The grant is limited to the exact artifact and registered hostname. It enters the script through protected stdin; the script does not receive the general OAuth token or start a local server. File access, outbound HTTPS, and a protected stdin channel are required.
 
 The Claude plugin manifest adds the local `insitu_home` MCP alongside the remote sales connection from `.mcp.json`. Claude starts the bundled server with `${CLAUDE_PLUGIN_ROOT}`; it needs Node.js 22 or later on PATH. Project and publication records use `${CLAUDE_PLUGIN_DATA}` through the server's `PLUGIN_DATA` variable, outside the installed plugin files.
 

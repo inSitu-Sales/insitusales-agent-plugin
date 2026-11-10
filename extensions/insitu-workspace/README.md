@@ -4,7 +4,7 @@ The interface is a directory of editable prompts. It includes suggestions for cu
 
 Selecting a prompt adds it to the active native composer with `send: false`. The user edits and sends it. Opening the directory or the B2B modal does not call business tools. Selecting a B2B prompt closes the modal. The close button, Escape, and the backdrop dismiss it without selecting a prompt. The interface does not read projects, display website previews, track publication, or send ZIP files. Business workflows run through the agent after the user sends a request.
 
-The authenticated remote MCP owns the global and thread entrypoints. The local MCP serves the same prompt directory on an explicit tool call and retains the agent's project and ZIP tools. It does not register navigation entries. This avoids two sidebar icons when both connections are installed.
+The authenticated remote MCP owns the global and thread entrypoints and serves the prompt directory for OpenAI installations. The Claude companion serves the same directory on an explicit tool call and retains the agent's project and ZIP tools. It does not register navigation entries.
 
 ## Build and verify
 
@@ -19,9 +19,17 @@ npm run preview
 
 The preview at `http://127.0.0.1:4317/` simulates the native composer and loads the directory in an iframe. It rejects automatic submission and business-tool calls. It has no account connection. `/widget` serves the component, and `/mcp` exposes its read-only opener for development.
 
-`package:plugin` builds the HTML and local server into `plugins/insitu-sales/`. Include these generated files with the source when releasing the plugin. Installation does not compile the source. Rebuild and update the installed plugin through the host before restarting it; a restart alone does not replace an installed version.
+`package:plugin` builds the shared HTML and Claude companion server into `plugins/insitu-sales/`. Include these generated files with the source when releasing the Claude plugin. Installation does not compile the source. Rebuild and update the installed plugin through the host before restarting it; a restart alone does not replace an installed version.
 
-The local connection retains `prepareStorefrontRelease`, `publishStorefrontRelease`, `registerStorefrontProject`, and `listStorefrontProjects` for agent use. These tools do not open the directory. Existing project records stay in `PLUGIN_DATA/storefronts-v1`.
+The Claude companion retains `prepareStorefrontRelease`, `publishStorefrontRelease`, `registerStorefrontProject`, and `listStorefrontProjects` for agent use. These tools do not open the directory. Existing project records stay in `PLUGIN_DATA/storefronts-v1`.
+
+## Package for OpenAI
+
+```sh
+npm run package:openai -- /absolute/path/to/insitu-sales-openai.zip
+```
+
+Requires the `zip` command and a new output path. The archive includes the OpenAI manifests, HTTPS MCP configuration, skills, and assets. It excludes other hosts' manifests and the local server. OpenAI connects only to the backend MCP; the authoring skill retains its upload helper for clients with local execution. The backend cannot read a user's filesystem path. Remote sales and the prompt directory do not require the helper.
 
 ## Update the remote interface
 

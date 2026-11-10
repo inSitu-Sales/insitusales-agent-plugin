@@ -71,7 +71,7 @@ codex plugin marketplace add /path/to/insitusales-agent-plugin
 codex plugin add app-6a7ca3b899bc81918a6ab1af007a82d6@insitu-sales
 ```
 
-The desktop plugin includes a local home-page MCP and the production sales connection. Node.js 22+ must be available as `node` on the desktop app's PATH. After updating, restart the desktop app to reload navigation and start a new chat. Open **inSitu Sales** from the sidebar, or ask directly in chat to create your B2B storefront. Selecting a home-page suggestion prepares a draft in the native composer; send it to begin.
+The OpenAI plugin connects to the production MCP over HTTPS. The backend serves the home page and its navigation entrypoints. After updating, restart the desktop app and start a new chat. Open **inSitu Sales** from the sidebar, or ask directly in chat to create your B2B storefront. Selecting a home-page suggestion prepares a draft in the native composer; send it to begin. Local storefront authoring and ZIP publication require file access, Node.js, and outbound HTTPS; the remote interface does not require a local MCP process.
 
 ## Install In Claude Code
 
@@ -213,7 +213,7 @@ microsoft-365-copilot/
 
 ## Storefront authoring
 
-The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its standalone Node.js upload helper. Use this workflow in a local coding environment with file access, Node.js, ZIP creation, and outbound HTTPS. The skill has no company allowlist or account-eligibility preflight. Backend administrator permission and hostname ownership remain authoritative for publication.
+The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its standalone Node.js upload helper. In OpenAI, this skill handles authoring and publication of existing ZIP files through the script; the remote MCP supplies company context and artifact-scoped authorization. Use this workflow in a local coding environment with file access, Node.js, ZIP creation, and outbound HTTPS. The skill has no company allowlist or account-eligibility preflight. Backend administrator permission and hostname ownership remain authoritative for publication.
 
 The existing sales connection stays unchanged. ChatGPT web/mobile execution and Claude/Cursor skill discovery need separate acceptance testing. Updating this repository does not establish that an approved ChatGPT listing has imported the new skill package.
 
@@ -235,9 +235,21 @@ The prompt directory is in [`extensions/insitu-workspace/`](extensions/insitu-wo
 
 Before submitting an update, compare these entries with authenticated company-user discovery and verify that buyer and mobile accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skill or upload helper.
 
+### Package for OpenAI submission
+
+From `extensions/insitu-workspace`, run:
+
+```sh
+npm run package:openai -- /absolute/path/to/insitu-sales-openai.zip
+```
+
+Requires Node.js and the `zip` command. The output path must not exist. This archive contains the OpenAI manifests, the production HTTPS MCP connection, skills, and assets. It excludes the Claude and Cursor manifests and the local server. Submit the remote MCP through the portal's **With MCP** flow; do not upload a ZIP of the whole repository or plugin source folder. See [OpenAI submission requirements](https://developers.openai.com/plugins/deploy/submission-errors).
+
+The UI source stays in this repository. Build and copy its presentation assets to the backend using [the remote interface workflow](extensions/insitu-workspace/README.md#update-the-remote-interface). Creating the archive does not deploy the backend, update installed plugins, or submit a release.
+
 ### Local storefront project references
 
-The portable `plugins/insitu-sales/plugin.json` and `mcp.json` enable Codex to provide `PLUGIN_DATA` to the local MCP process. The server stores project and artifact metadata under `PLUGIN_DATA/storefronts-v1`, outside the installed package. Hosts without this directory can still use the existing design and publication tools; saved project operations report that storage is unavailable.
+The Claude companion stores project and artifact metadata under `PLUGIN_DATA/storefronts-v1`, outside the installed package. OpenAI installations connect only to the remote MCP and do not start this registry. Their authoring skill uses the bundled upload helper when the client supports local file and network execution. Clients without those capabilities can use remote sales tools, but cannot upload a ZIP from a local path.
 
 The agent can read these references through the local project tools. The prompt directory does not read or refresh them. These records are not backups or authoritative deployment status. Company IDs are local labels and do not establish account access. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry is allowed after an unconfirmed result and requires fresh authorization; uploads are never retried automatically. Removing local data loses these references, so users may need to register their folders again.
 
