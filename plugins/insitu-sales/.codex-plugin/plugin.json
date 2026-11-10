@@ -27,8 +27,7 @@
     "defaultPrompt": [
       "Show me today’s invoices",
       "What were my top-selling products last week?",
-      "Help me create my B2B storefront with inSitu. Guide me step by step and show me a preview.",
-      "Ayúdame a crear mi tienda B2B con inSitu. Guíame paso a paso y muéstrame una vista previa."
+      "Help me create my B2B storefront with inSitu. Guide me step by step and show me a preview."
     ]
   },
   "mcpServers": "./.codex-mcp.json"

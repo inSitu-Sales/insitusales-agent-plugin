@@ -45,25 +45,24 @@ test("storefront discovery recognizes English and Spanish requests", () => {
   assert.match(skill, /Do not invent.*hostname/);
 });
 
-test("Codex offers bilingual storefront starters while retaining sales suggestions", () => {
-  const { interface: presentation } = readJson(
-    "plugins/insitu-sales/.codex-plugin/plugin.json",
-  );
-  assert.ok(presentation.defaultPrompt.includes("Show me today’s invoices"));
-  assert.ok(
-    presentation.defaultPrompt.includes(
-      "What were my top-selling products last week?",
-    ),
-  );
-  for (const beginning of [
-    "Help me create my B2B storefront",
-    "Ayúdame a crear mi tienda B2B",
-  ])
-    assert.ok(
-      presentation.defaultPrompt.some((prompt) => prompt.startsWith(beginning)),
-    );
-  for (const prompt of presentation.defaultPrompt.slice(2))
-    assert.match(prompt, /preview|vista previa/);
+test("both OpenAI manifests offer the same three English starters", () => {
+  const expected = [
+    "Show me today’s invoices",
+    "What were my top-selling products last week?",
+    "Help me create my B2B storefront with inSitu. Guide me step by step and show me a preview.",
+  ];
+  const presentations = [
+    readJson("plugins/insitu-sales/plugin.json").extensions["com.openai"].interface,
+    readJson("plugins/insitu-sales/.codex-plugin/plugin.json").interface,
+  ];
+  for (const presentation of presentations) {
+    assert.ok(presentation.defaultPrompt.length <= 3);
+    assert.deepEqual(presentation.defaultPrompt, expected);
+    for (const prompt of presentation.defaultPrompt) {
+      assert.ok(prompt.length <= 128);
+      assert.doesNotMatch(prompt, /[\r\n]/);
+    }
+  }
 });
 
 test("every authored skin requires both legal views and blocks readiness on missing policies", () => {
