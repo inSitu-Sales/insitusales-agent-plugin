@@ -131,6 +131,29 @@ function throwPublicationFailure(status, data) {
     throw error;
   }
 }
+function publicationCustomDomain(custom, status) {
+    if (!custom || typeof custom.hostname !== "string" || !/^[a-z0-9.-]{1,253}$/.test(custom.hostname) ||
+        !["active", "pending", "unconfirmed"].includes(custom.status)) {
+      throw uploadFailure("response-contract", status);
+    }
+
+    return { hostname: custom.hostname, status: custom.status };
+}
+function publicationDetails(data, status) {
+  const details = {};
+  if (data.storefrontUrl !== undefined) {
+    if (typeof data.storefrontUrl !== "string" || !/^https:\/\/[a-z0-9-]+\.b2becommerce\.store$/.test(data.storefrontUrl)) {
+      throw uploadFailure("response-contract", status);
+    }
+
+    details.storefrontUrl = data.storefrontUrl;
+  }
+  if (data.customDomain !== undefined) {
+    details.customDomain = publicationCustomDomain(data.customDomain, status);
+  }
+
+  return details;
+}
 function publicationResult(status, data, grant) {
   throwPublicationFailure(status, data);
   const outcomes = {
@@ -156,6 +179,7 @@ function publicationResult(status, data, grant) {
     stage: data.stage,
     hostname: data.hostname,
     release: { siteId: data.release.siteId, digest: data.release.digest },
+    ...publicationDetails(data, status),
   };
 }
 function sendUpload(transport, grant, upload) {

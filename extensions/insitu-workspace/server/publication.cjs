@@ -188,7 +188,7 @@ function createPublicationTools(helper = uploader, registry) {
             ...artifact,
             status: "prepared",
             message:
-              "ZIP read and service reachable. Review the artifact and hostname before authorizing publication.",
+              "ZIP read and service reachable. Review the artifact before authorizing publication for the authenticated company.",
           });
         }
         const artifact = prepared.get(args.artifactId);
