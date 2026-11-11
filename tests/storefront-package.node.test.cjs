@@ -544,3 +544,13 @@ test("plugin release versions agree across host manifests and marketplace entrie
   assert.equal(lock.version, extension.version);
   assert.equal(lock.packages[""].version, extension.version);
 });
+
+
+test("agent discovery distinguishes assigned URLs from confirmed active publication",()=>{
+ const skill=fs.readFileSync(skillPath,"utf8");
+ assert.match(skill,/isStorefrontPublishedAndActive: true/);
+ assert.match(skill,/active publication could not be confirmed/);
+ assert.match(skill,/do not claim that the company never published/);
+ assert.match(skill,/flag applies to `storefrontUrl`, not `customurl`/);
+ assert.doesNotMatch(skill,/customStorefrontUrl/);
+});
