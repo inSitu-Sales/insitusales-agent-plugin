@@ -52,7 +52,7 @@ test("both OpenAI manifests offer the same three English starters", () => {
     "Help me create my B2B storefront with inSitu. Guide me step by step and show me a preview.",
   ];
   const presentations = [
-    readJson("plugins/insitu-sales/plugin.json").extensions["com.openai"].interface,
+    readJson("extensions/insitu-workspace/openai/plugin.json").extensions["com.openai"].interface,
     readJson("plugins/insitu-sales/.codex-plugin/plugin.json").interface,
   ];
   for (const presentation of presentations) {
@@ -306,6 +306,7 @@ test("all MCP configurations retain the production server", () => {
     ".mcp.json",
     "plugins/insitu-sales/.mcp.json",
     "plugins/insitu-sales/mcp.json",
+    "extensions/insitu-workspace/openai/mcp.json",
     "plugins/insitu-sales/.codex-mcp.json",
   ]) {
     assert.equal(
@@ -527,7 +528,7 @@ test('the actual uploader identifies missing local files before any network requ
 });
 
 test("plugin release versions agree across host manifests and marketplace entries", () => {
-  const portable = readJson("plugins/insitu-sales/plugin.json");
+  const portable = readJson("extensions/insitu-workspace/openai/plugin.json");
   for (const file of [
     "plugins/insitu-sales/.codex-plugin/plugin.json",
     "plugins/insitu-sales/.claude-plugin/plugin.json",

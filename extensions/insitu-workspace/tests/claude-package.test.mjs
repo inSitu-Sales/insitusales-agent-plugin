@@ -9,6 +9,7 @@ test('Claude connects only to the production HTTPS MCP', async () => {
   assert.equal(manifest.mcpServers, undefined, 'Use the default remote .mcp.json without inline local servers');
   const config = JSON.parse(await readFile(new URL('.mcp.json', plugin), 'utf8'));
   assert.deepEqual(Object.keys(config.mcpServers), ['insitu_sales']);
+  assert.deepEqual(Object.keys(config.mcpServers.insitu_sales).sort(), ['type', 'url'], 'Claude directory accepts only documented server fields');
   assert.equal(config.mcpServers.insitu_sales.type, 'http');
   assert.equal(config.mcpServers.insitu_sales.url, 'https://api.insitusales.com/mcp');
   assert.doesNotMatch(JSON.stringify(config), /"command"|"stdio"/);

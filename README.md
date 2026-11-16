@@ -203,6 +203,8 @@ plugins/insitu-sales/.cursor-plugin/plugin.json
 plugins/insitu-sales/.mcp.json
 plugins/insitu-sales/.codex-mcp.json
 plugins/insitu-sales/mcp.json
+extensions/insitu-workspace/openai/plugin.json
+extensions/insitu-workspace/openai/mcp.json
 plugins/insitu-sales/README.md
 plugins/insitu-sales/assets/
 plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md

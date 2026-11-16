@@ -8,11 +8,12 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const plugin = new URL('../../../plugins/insitu-sales/', import.meta.url);
+const portable = new URL('../openai/', import.meta.url);
 const packager = fileURLToPath(new URL('../package-openai.mjs', import.meta.url));
 
 test('OpenAI installations connect through HTTPS without starting a local MCP', async () => {
   for (const file of ['mcp.json', '.codex-mcp.json']) {
-    const config = JSON.parse(await readFile(new URL(file, plugin), 'utf8'));
+    const config = JSON.parse(await readFile(new URL(file, file === 'mcp.json' ? portable : plugin), 'utf8'));
     assert.deepEqual(Object.keys(config.mcpServers), ['insitu_sales']);
     const server = config.mcpServers.insitu_sales;
     assert.equal(server.url, 'https://api.insitusales.com/mcp');
