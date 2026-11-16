@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -61,18 +61,23 @@ test('the OpenAI skill routes ZIP requests to its script without requiring local
   const description = skill.split('\n').find(line => line.startsWith('description:'));
   assert.match(description, /publish.*ZIP/i);
   assert.match(description, /subir.*ZIP/i);
-  assert.match(skill, /OpenAI installations use the bundled upload script/);
+  assert.match(skill, /OpenAI and Claude installations use the bundled upload script/);
   assert.match(skill, /Do not start or install a local MCP/);
-  assert.match(skill, /If the selected transport is the script.*--publish/s);
+  assert.match(skill, /Pass only the delegated grant.*--publish/s);
   assert.doesNotMatch(skill, /then call publishStorefrontRelease/);
 });
 
-test('the packaged script prepares, checks and publishes a ZIP using an artifact grant on stdin', async t => {
+for (const host of ['OpenAI', 'Claude']) {
+test(`${host} installs a helper that prepares, checks and publishes a ZIP using an artifact grant on stdin`, async t => {
   const root = await mkdtemp(join(tmpdir(), 'insitu-script-publication-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const archive = join(root, 'plugin.zip');
-  execFileSync(process.execPath, [packager, archive]);
-  execFileSync('unzip', ['-q', archive, '-d', join(root, 'installed')]);
+  if (host === 'OpenAI') {
+    const archive = join(root, 'plugin.zip');
+    execFileSync(process.execPath, [packager, archive]);
+    execFileSync('unzip', ['-q', archive, '-d', join(root, 'installed')]);
+  } else {
+    await cp(plugin, join(root, 'installed'), { recursive: true });
+  }
   const helper = join(root, 'installed/skills/insitu-storefront-authoring/scripts/upload-storefront.js');
   await writeFile(join(root, 'index.html'), '<!doctype html><title>Storefront fixture</title>');
   const zip = join(root, 'storefront.zip');
@@ -132,3 +137,4 @@ test('the packaged script prepares, checks and publishes a ZIP using an artifact
   assert.equal(JSON.parse(changed.stderr).stage, 'authorization');
   assert.doesNotMatch(changed.stdout + changed.stderr, new RegExp(grant.authorization));
 });
+}

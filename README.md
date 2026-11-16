@@ -90,7 +90,7 @@ Reload plugins or start a new Claude Code session after installing:
 /reload-plugins
 ```
 
-The installed Claude plugin also starts the bundled local MCP for storefront ZIP preparation and publication. Node.js 22 or later must be available on PATH. ZIP operations run through chat; no visual interface is required. Local project records use Claude's persistent plugin data directory. The remote connection continues to own account sign-in and upload authorization.
+The installed Claude plugin connects to the production MCP over HTTPS. Its storefront skill uses the bundled Node.js helper for ZIP preparation and publication through chat. File access, outbound HTTPS, and a protected stdin channel are required. The remote connection owns account sign-in and artifact-scoped upload authorization; no local MCP server or project registry is started.
 
 Claude Code can also read the shared project MCP config from `.mcp.json`.
 
@@ -227,7 +227,7 @@ These checks cover package paths, access instructions, connection/version consis
 
 ## Chat extension development
 
-The prompt directory is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). Selecting a suggestion adds an editable, unsent prompt to the native chat input. The B2B group contains prompts to create a portal or send a project ZIP. The remote MCP owns the sidebar and conversation entrypoints; the local companion retains agent tools without registering another navigation entry. Rebuild the packaged HTML and local server with `npm run package:plugin` in that directory. Update and deploy the remote presentation separately through the backend release process.
+The prompt directory is in [`extensions/insitu-workspace/`](extensions/insitu-workspace/README.md). Selecting a suggestion adds an editable, unsent prompt to the native chat input. The B2B group contains prompts to create a portal or send a project ZIP. The remote MCP owns the sidebar and conversation entrypoints. Rebuild the packaged HTML with `npm run package:plugin` in that directory. Update and deploy the remote presentation separately through the backend release process.
 
 ## ChatGPT submission maintenance
 
@@ -249,9 +249,9 @@ The UI source stays in this repository. Build and copy its presentation assets t
 
 ### Local storefront project references
 
-The Claude companion stores project and artifact metadata under `PLUGIN_DATA/storefronts-v1`, outside the installed package. OpenAI installations connect only to the remote MCP and do not start this registry. Their authoring skill uses the bundled upload helper when the client supports local file and network execution. Clients without those capabilities can use remote sales tools, but cannot upload a ZIP from a local path.
+OpenAI and Claude installations connect only to the remote MCP. Their authoring skill uses the bundled upload helper when the client supports local file and network execution. Clients without those capabilities can use remote sales tools, but cannot upload a ZIP from a local path.
 
-The agent can read these references through the local project tools. The prompt directory does not read or refresh them. These records are not backups or authoritative deployment status. Company IDs are local labels and do not establish account access. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry is allowed after an unconfirmed result and requires fresh authorization; uploads are never retried automatically. Removing local data loses these references, so users may need to register their folders again.
+The plugin no longer starts a local project registry. Existing records under `PLUGIN_DATA/storefronts-v1` remain on disk but are not read or migrated. Resume projects from their workspace folders and verify company context through the remote MCP. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry after an unconfirmed result requires fresh authorization; uploads are never retried automatically.
 
 ## Legal
 

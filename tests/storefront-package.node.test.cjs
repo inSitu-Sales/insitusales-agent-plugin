@@ -102,11 +102,11 @@ test("publication guidance checks helper connectivity before requesting a grant"
   const skill = fs.readFileSync(skillPath, "utf8");
   const publication = skill.split("## Review and publish deliberately\n")[1];
   assert.match(publication, /node .*--check-connection/);
-  const helperFallback = publication.slice(publication.indexOf("If local publication tools are unavailable"));
-  const connectionCheck = helperFallback.indexOf("--check-connection");
-  const authorizationRequest = helperFallback.indexOf("request artifact-scoped authorization using authorizeStorefrontUpload");
-  assert.ok(connectionCheck >= 0, "The helper fallback must check connectivity");
-  assert.ok(authorizationRequest >= 0, "The helper fallback must request artifact-scoped authorization");
+  const helperPublication = publication.slice(publication.indexOf("Before requesting a grant"));
+  const connectionCheck = helperPublication.indexOf("--check-connection");
+  const authorizationRequest = helperPublication.indexOf("request artifact-scoped authorization using authorizeStorefrontUpload");
+  assert.ok(connectionCheck >= 0, "The helper publication must check connectivity");
+  assert.ok(authorizationRequest >= 0, "The helper publication must request artifact-scoped authorization");
   assert.ok(connectionCheck < authorizationRequest, "Check connectivity before requesting authorization");
   assert.match(
     publication,
