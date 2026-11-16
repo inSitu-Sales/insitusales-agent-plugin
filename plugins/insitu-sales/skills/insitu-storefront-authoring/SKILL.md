@@ -59,6 +59,8 @@ Keep the template's tested authentication, caching, branding, privacy, and check
 
 ## Support white-label apps
 
+Every storefront must work as a standalone website and be ready for optional embedding in a white-label app. White-label service is optional for each company; compatibility does not establish enrollment or require a native app. Read [browser and app layout](layout.md) for every creation, remix, or layout change, even when the company currently uses only the website. Treat compatibility as part of the generated HTML and CSS rather than relying on the app to repair it. Preserve the shared native observer and session adapter even when the company currently uses only the website.
+
 The Capacitor app lives in the separate `st_white_label_b2becommerce` repository. The app injects `window.insituStoreNative`; storefronts consume that global through the maintained shared adapter. Do not bundle or install the SDK in a remix. Read [native app integration](native.md) when targeting a white-label app, adding barcode scanning or notifications, or investigating native compatibility. Keep permission requests and buyer/device association in the SDK and shared session adapter, rather than implementing them in each skin.
 
 ## Review and publish deliberately
