@@ -10,7 +10,7 @@ const root = path.resolve(__dirname, "..");
 const plugin = path.join(root, "plugins/insitu-sales");
 const skillDirectory = path.join(plugin, "skills/insitu-storefront-authoring");
 const skillPath = path.join(skillDirectory, "SKILL.md");
-const helperPath = path.join(skillDirectory, "scripts/upload-storefront.js");
+const helperPath = path.join(root, "extensions/insitu-workspace/server/upload-storefront.cjs");
 const readJson = (file) =>
   JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
 
@@ -52,7 +52,7 @@ test("both OpenAI manifests offer the same three English starters", () => {
     "Help me create my B2B storefront with inSitu. Guide me step by step and show me a preview.",
   ];
   const presentations = [
-    readJson("extensions/insitu-workspace/openai/plugin.json").extensions["com.openai"].interface,
+    readJson("openai-plugin/plugin.json").extensions["com.openai"].interface,
     readJson("plugins/insitu-sales/.codex-plugin/plugin.json").interface,
   ];
   for (const presentation of presentations) {
@@ -101,16 +101,16 @@ test("the package keeps buyer commerce separate from administrator authorization
 test("publication guidance checks helper connectivity before requesting a grant", () => {
   const skill = fs.readFileSync(skillPath, "utf8");
   const publication = skill.split("## Review and publish deliberately\n")[1];
-  assert.match(publication, /node .*--check-connection/);
+  assert.match(publication, /run the connection check from the upload procedure/);
   const helperPublication = publication.slice(publication.indexOf("Before requesting a grant"));
-  const connectionCheck = helperPublication.indexOf("--check-connection");
+  const connectionCheck = helperPublication.indexOf("connection check");
   const authorizationRequest = helperPublication.indexOf("request artifact-scoped authorization using authorizeStorefrontUpload");
   assert.ok(connectionCheck >= 0, "The helper publication must check connectivity");
   assert.ok(authorizationRequest >= 0, "The helper publication must request artifact-scoped authorization");
   assert.ok(connectionCheck < authorizationRequest, "Check connectivity before requesting authorization");
   assert.match(
     publication,
-    /same Node\.js executable and execution permissions/,
+    /same `curl` executable and execution permissions/,
   );
   assert.match(publication, /request.*network.*permission/i);
   assert.match(publication, /policy.*denies/i);
@@ -306,7 +306,7 @@ test("all MCP configurations retain the production server", () => {
     ".mcp.json",
     "plugins/insitu-sales/.mcp.json",
     "plugins/insitu-sales/mcp.json",
-    "extensions/insitu-workspace/openai/mcp.json",
+    "openai-plugin/mcp.json",
     "plugins/insitu-sales/.codex-mcp.json",
   ]) {
     assert.equal(
@@ -528,7 +528,7 @@ test('the actual uploader identifies missing local files before any network requ
 });
 
 test("plugin release versions agree across host manifests and marketplace entries", () => {
-  const portable = readJson("extensions/insitu-workspace/openai/plugin.json");
+  const portable = readJson("openai-plugin/plugin.json");
   for (const file of [
     "plugins/insitu-sales/.codex-plugin/plugin.json",
     "plugins/insitu-sales/.claude-plugin/plugin.json",

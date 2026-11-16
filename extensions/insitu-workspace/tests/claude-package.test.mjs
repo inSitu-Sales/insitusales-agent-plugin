@@ -15,14 +15,17 @@ test('Claude connects only to the production HTTPS MCP', async () => {
   assert.doesNotMatch(JSON.stringify(config), /"command"|"stdio"/);
 });
 
-test('Claude ZIP publication uses the packaged helper without local MCP tools or a project registry', async () => {
+test('Claude ZIP publication uses documented steps without a script, local MCP tools or a project registry', async () => {
   const skill = await readFile(new URL('skills/insitu-storefront-authoring/SKILL.md', plugin), 'utf8');
-  assert.match(skill, /OpenAI and Claude installations use the bundled upload script/);
-  assert.match(skill, /scripts\/upload-storefront\.js/);
+  assert.match(skill, /Publish with \[the upload procedure\]\(upload\.md\)/);
+  assert.doesNotMatch(skill, /upload-storefront|node <helper-path>|bundled script/);
+  const manual = await readFile(new URL('skills/insitu-storefront-authoring/upload.md', plugin), 'utf8');
+  assert.match(manual, /https:\/\/api\.insitusales\.com\/api\/v1\/b2b-ecommerce\/authorized-releases/);
+  assert.match(manual, /--header @-/);
+  assert.match(manual, /X-Storefront-Upload-Authorization/);
   assert.match(skill, /Do not start or install a local MCP/);
-  assert.match(skill, /--prepare/);
-  assert.match(skill, /--check-connection/);
-  assert.match(skill, /--publish/);
-  assert.match(skill, /JSON on stdin/);
+  assert.match(skill, /prepare step/);
+  assert.match(skill, /connection check/);
+  assert.match(skill, /publish step on stdin/);
   assert.doesNotMatch(skill, /prepareStorefrontRelease|publishStorefrontRelease|registerStorefrontProject|listStorefrontProjects|local MCP transport/);
 });

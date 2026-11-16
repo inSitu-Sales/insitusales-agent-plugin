@@ -4,7 +4,7 @@ const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
 const http = require("node:http");
-const { prepareArchive, publishArchive } = require("../plugins/insitu-sales/skills/insitu-storefront-authoring/scripts/upload-storefront.js");
+const { prepareArchive, publishArchive } = require("../extensions/insitu-workspace/server/upload-storefront.cjs");
 
 test("publication helper preserves canonical URL and separate custom-domain readiness", async (t) => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), "storefront-publication-"));

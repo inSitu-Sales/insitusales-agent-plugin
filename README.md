@@ -90,7 +90,7 @@ Reload plugins or start a new Claude Code session after installing:
 /reload-plugins
 ```
 
-The installed Claude plugin connects to the production MCP over HTTPS. Its storefront skill uses the bundled Node.js helper for ZIP preparation and publication through chat. File access, outbound HTTPS, and a protected stdin channel are required. The remote connection owns account sign-in and artifact-scoped upload authorization; no local MCP server or project registry is started.
+The installed Claude plugin connects to the production MCP over HTTPS. Its storefront skill publishes a ZIP through chat with `curl` and a SHA-256 tool, following the skill's `upload.md`. The plugin bundles no script, because the Claude directory does not accept them. File access, outbound HTTPS, and a protected stdin channel are required. The remote connection owns account sign-in and artifact-scoped upload authorization; no local MCP server or project registry is started.
 
 Claude Code can also read the shared project MCP config from `.mcp.json`.
 
@@ -203,19 +203,19 @@ plugins/insitu-sales/.cursor-plugin/plugin.json
 plugins/insitu-sales/.mcp.json
 plugins/insitu-sales/.codex-mcp.json
 plugins/insitu-sales/mcp.json
-extensions/insitu-workspace/openai/plugin.json
-extensions/insitu-workspace/openai/mcp.json
+openai-plugin/plugin.json
+openai-plugin/mcp.json
 plugins/insitu-sales/README.md
 plugins/insitu-sales/assets/
 plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md
-plugins/insitu-sales/skills/insitu-storefront-authoring/scripts/upload-storefront.js
+plugins/insitu-sales/skills/insitu-storefront-authoring/upload.md
 chatgpt-app-submission.json
 microsoft-365-copilot/
 ```
 
 ## Storefront authoring
 
-The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its standalone Node.js upload helper. In OpenAI, this skill handles authoring and publication of existing ZIP files through the script; the remote MCP supplies company context and artifact-scoped authorization. Use this workflow in a local coding environment with file access, Node.js, ZIP creation, and outbound HTTPS. The skill has no company allowlist or account-eligibility preflight. Backend administrator permission and hostname ownership remain authoritative for publication.
+The package includes `plugins/insitu-sales/skills/insitu-storefront-authoring/SKILL.md` and its `upload.md` procedure. In OpenAI, this skill handles authoring and publication of existing ZIP files with `curl`, without a bundled script; the remote MCP supplies company context and artifact-scoped authorization. Use this workflow in a local coding environment with file access, `curl`, ZIP creation, and outbound HTTPS; Node.js is needed only to build a template. The skill has no company allowlist or account-eligibility preflight. Backend administrator permission and hostname ownership remain authoritative for publication.
 
 The existing sales connection stays unchanged. ChatGPT web/mobile execution and Claude/Cursor skill discovery need separate acceptance testing. Updating this repository does not establish that an approved ChatGPT listing has imported the new skill package.
 
@@ -225,7 +225,7 @@ Run the dependency-free package checks from the repository root:
 node --test tests/*.node.test.cjs
 ```
 
-These checks cover package paths, access instructions, connection/version consistency, the submission tool catalog, and helper preparation/expired-grant rejection. They do not replace a fresh installed-agent authoring test or live publication acceptance.
+These checks cover package paths, access instructions, connection/version consistency, the submission tool catalog, and the development server's upload helper (`extensions/insitu-workspace/server/upload-storefront.cjs`), which no plugin ships. They do not replace a fresh installed-agent authoring test or live publication acceptance.
 
 ## Chat extension development
 
@@ -251,7 +251,7 @@ The UI source stays in this repository. Build and copy its presentation assets t
 
 ### Local storefront project references
 
-OpenAI and Claude installations connect only to the remote MCP. Their authoring skill uses the bundled upload helper when the client supports local file and network execution. Clients without those capabilities can use remote sales tools, but cannot upload a ZIP from a local path.
+OpenAI and Claude installations connect only to the remote MCP. The shared authoring skill publishes with the documented `curl` steps in `upload.md` on every host, when the client supports local file and network execution. Clients without those capabilities can use remote sales tools, but cannot upload a ZIP from a local path.
 
 The plugin no longer starts a local project registry. Existing records under `PLUGIN_DATA/storefronts-v1` remain on disk but are not read or migrated. Resume projects from their workspace folders and verify company context through the remote MCP. Files and authorization are checked again before upload; grants are never persisted. A user-requested retry after an unconfirmed result requires fresh authorization; uploads are never retried automatically.
 

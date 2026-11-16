@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const plugin = new URL('../../../plugins/insitu-sales/', import.meta.url);
-const portable = new URL('../openai/', import.meta.url);
+const portable = new URL('../../../openai-plugin/', import.meta.url);
 const packager = fileURLToPath(new URL('../package-openai.mjs', import.meta.url));
 
 test('OpenAI installations connect through HTTPS without starting a local MCP', async () => {
@@ -22,7 +22,7 @@ test('OpenAI installations connect through HTTPS without starting a local MCP', 
   }
 });
 
-test('the OpenAI archive contains skills and the upload helper without command MCP manifests', async t => {
+test('the OpenAI archive contains skills without scripts or command MCP manifests', async t => {
   const root = await mkdtemp(join(tmpdir(), 'insitu-openai-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const archive = join(root, 'plugin.zip');
@@ -33,7 +33,8 @@ test('the OpenAI archive contains skills and the upload helper without command M
   for (const skill of ['insitu-storefront-authoring', 'insitu-workspace']) {
     assert.ok(entries.includes(`skills/${skill}/SKILL.md`));
   }
-  assert.ok(entries.includes('skills/insitu-storefront-authoring/scripts/upload-storefront.js'));
+  assert.ok(entries.includes('skills/insitu-storefront-authoring/upload.md'));
+  assert.ok(entries.every(file => !/\.(c|m)?js$/.test(file)), 'The archive ships no scripts');
   assert.ok(entries.every(file => !/^(server|ui|\.claude-plugin|\.cursor-plugin|node_modules)\//.test(file)));
   const readJson = file => JSON.parse(execFileSync('unzip', ['-p', archive, file], { encoding: 'utf8' }));
   const manifest = readJson('.codex-plugin/plugin.json');
@@ -57,29 +58,22 @@ test('packaging preserves an existing archive instead of overwriting it', async 
   assert.match(result.stderr, /already exists/);
 });
 
-test('the OpenAI skill routes ZIP requests to its script without requiring local MCP tools', async () => {
+test('the OpenAI skill routes ZIP requests to its upload procedure without requiring local MCP tools', async () => {
   const skill = await readFile(new URL('skills/insitu-storefront-authoring/SKILL.md', plugin), 'utf8');
   const description = skill.split('\n').find(line => line.startsWith('description:'));
   assert.match(description, /publish.*ZIP/i);
   assert.match(description, /subir.*ZIP/i);
-  assert.match(skill, /OpenAI and Claude installations use the bundled upload script/);
+  assert.match(skill, /Publish with \[the upload procedure\]\(upload\.md\)/);
   assert.match(skill, /Do not start or install a local MCP/);
-  assert.match(skill, /Pass only the delegated grant.*--publish/s);
+  assert.match(skill, /Pass only the delegated grant.*publish step on stdin/s);
   assert.doesNotMatch(skill, /then call publishStorefrontRelease/);
 });
 
-for (const host of ['OpenAI', 'Claude']) {
-test(`${host} installs a helper that prepares, checks and publishes a ZIP using an artifact grant on stdin`, async t => {
+for (const host of ['development server']) {
+test(`the ${host} helper prepares, checks and publishes a ZIP using an artifact grant on stdin`, async t => {
   const root = await mkdtemp(join(tmpdir(), 'insitu-script-publication-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  if (host === 'OpenAI') {
-    const archive = join(root, 'plugin.zip');
-    execFileSync(process.execPath, [packager, archive]);
-    execFileSync('unzip', ['-q', archive, '-d', join(root, 'installed')]);
-  } else {
-    await cp(plugin, join(root, 'installed'), { recursive: true });
-  }
-  const helper = join(root, 'installed/skills/insitu-storefront-authoring/scripts/upload-storefront.js');
+  const helper = fileURLToPath(new URL('../server/upload-storefront.cjs', import.meta.url));
   await writeFile(join(root, 'index.html'), '<!doctype html><title>Storefront fixture</title>');
   const zip = join(root, 'storefront.zip');
   execFileSync('zip', ['-q', zip, 'index.html'], { cwd: root });

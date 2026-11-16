@@ -8,7 +8,7 @@ const output = resolve(process.argv[2]);
 const plugin = new URL('../../plugins/insitu-sales/', import.meta.url);
 // The portable OpenAI manifests live outside the shared plugin folder: Claude's directory
 // only accepts its own manifests there.
-const portable = new URL('./openai/', import.meta.url);
+const portable = new URL('../../openai-plugin/', import.meta.url);
 const source = name => new URL(name, ['plugin.json', 'mcp.json'].includes(name) ? portable : plugin);
 for (const name of ['mcp.json', '.codex-mcp.json']) {
   const { mcpServers } = JSON.parse(await readFile(source(name), 'utf8'));
