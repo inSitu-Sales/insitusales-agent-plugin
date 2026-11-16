@@ -6,7 +6,7 @@ Generate one responsive storefront for ordinary browsers and optional white-labe
 
 ## Viewport and form controls
 
-Preserve a device-width viewport with an initial scale of one. Keep text-entry inputs, search, email/password fields, textareas, and selects at a computed font size of at least 16 CSS px. A body default does not protect controls whose component styles reduce the font. Preserve larger type and user text scaling. Check sign-in, activation, search, quantity entry, and checkout after changing skins or form styles.
+Include exactly one viewport meta tag: `<meta name="viewport" content="width=device-width, initial-scale=1.0" />`. Keep text-entry inputs, search, email/password fields, textareas, and selects at a computed font size of at least 16 CSS px. A body default does not protect controls whose component styles reduce the font. Preserve larger type and user text scaling. Check sign-in, activation, search, quantity entry, and checkout after changing skins or form styles.
 
 Prevent accidental focus magnification with readable control sizing, rather than disabling zoom with `user-scalable=no`, restrictive `maximum-scale`, or global cancellation of `touchstart` or `touchmove` events. The app's font protection is a fallback, not a substitute for correct storefront CSS. Native inputs and browser inputs need the same readable baseline.
 
