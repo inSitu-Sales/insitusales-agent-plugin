@@ -71,7 +71,7 @@ codex plugin marketplace add /path/to/insitusales-agent-plugin
 codex plugin add app-6a7ca3b899bc81918a6ab1af007a82d6@insitu-sales
 ```
 
-The OpenAI plugin connects to the production MCP over HTTPS. The backend serves the home page and its navigation entrypoints. After updating, restart the desktop app and start a new chat. Open **inSitu Sales** from the sidebar, or ask directly in chat to create your B2B storefront. Selecting a home-page suggestion prepares a draft in the native composer; send it to begin. Local storefront authoring and ZIP publication require file access, Node.js, and outbound HTTPS; the remote interface does not require a local MCP process.
+The OpenAI plugin connects to the production MCP over HTTPS. The backend serves the home page and its navigation entrypoints. After updating, restart the desktop app and start a new chat. Open **inSitu Sales** from the sidebar, or ask directly in chat to create your B2B storefront. Selecting a home-page suggestion prepares a draft in the native composer; send it to begin. Local storefront authoring and ZIP publication require file access and outbound HTTPS. Publication uses curl and a checksum tool; Node.js is needed only when required by the project toolchain. The remote interface does not require a local MCP process.
 
 ## Install In Claude Code
 
@@ -235,7 +235,7 @@ The prompt directory is in [`extensions/insitu-workspace/`](extensions/insitu-wo
 
 `chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. The two storefront authoring actions are available to verified company-user accounts without a company allowlist; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.
 
-Before submitting an update, compare these entries with authenticated company-user discovery and verify that buyer and mobile accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skill or upload helper.
+Before submitting an update, compare these entries with authenticated company-user discovery and verify that buyer and mobile accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skills.
 
 ### Package for OpenAI submission
 

@@ -15,7 +15,7 @@ const readJson = (file) =>
   JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
 
 // These checks protect packaging contracts, not agent instruction following.
-test("the Codex manifest resolves a packaged storefront skill and helper", () => {
+test("the Codex manifest resolves a packaged storefront skill and upload procedure", () => {
   const manifest = readJson("plugins/insitu-sales/.codex-plugin/plugin.json");
   assert.equal(manifest.skills, "./skills/");
   const skill = fs.readFileSync(skillPath, "utf8");
@@ -23,7 +23,7 @@ test("the Codex manifest resolves a packaged storefront skill and helper", () =>
     skill,
     /^---\nname: insitu-storefront-authoring\ndescription: Use when /,
   );
-  assert.ok(fs.statSync(helperPath).isFile());
+  assert.ok(fs.statSync(path.join(skillDirectory, "upload.md")).isFile());
 });
 
 test("storefront discovery recognizes English and Spanish requests", () => {
@@ -98,20 +98,13 @@ test("the package keeps buyer commerce separate from administrator authorization
   assert.doesNotMatch(skill, /testomer|testuser@test\.com|localhost:80/);
 });
 
-test("publication guidance checks helper connectivity before requesting a grant", () => {
-  const skill = fs.readFileSync(skillPath, "utf8");
-  const publication = skill.split("## Review and publish deliberately\n")[1];
-  assert.match(publication, /run the connection check from the upload procedure/);
-  const helperPublication = publication.slice(publication.indexOf("Before requesting a grant"));
-  const connectionCheck = helperPublication.indexOf("connection check");
-  const authorizationRequest = helperPublication.indexOf("request artifact-scoped authorization using authorizeStorefrontUpload");
-  assert.ok(connectionCheck >= 0, "The helper publication must check connectivity");
-  assert.ok(authorizationRequest >= 0, "The helper publication must request artifact-scoped authorization");
-  assert.ok(connectionCheck < authorizationRequest, "Check connectivity before requesting authorization");
-  assert.match(
-    publication,
-    /same `curl` executable and execution permissions/,
-  );
+test("publication guidance checks connectivity before requesting a grant", () => {
+  const publication = fs.readFileSync(path.join(skillDirectory, "upload.md"), "utf8");
+  const connectionCheck = publication.indexOf("## Check the connection");
+  const authorizationRequest = publication.indexOf("## Authorize the prepared artifact");
+  assert.ok(connectionCheck >= 0);
+  assert.ok(authorizationRequest > connectionCheck);
+  assert.match(publication, /same `curl` executable and execution permissions/);
   assert.match(publication, /request.*network.*permission/i);
   assert.match(publication, /policy.*denies/i);
   assert.match(publication, /does not prove.*publication/i);
@@ -390,7 +383,7 @@ test("the standalone helper prepares exact file bytes without dependencies", () 
   });
 });
 
-test("the packaged helper reports safe failure details without retrying", async () => {
+test("the development uploader reports safe failure details without retrying", async () => {
   const { publishArchive } = require(helperPath);
   const bytes = fs.readFileSync(skillPath);
   const grant = {
@@ -432,7 +425,7 @@ test("the packaged helper reports safe failure details without retrying", async 
   assert.equal(requests, 1);
 });
 
-test("the packaged helper exposes only an allowlisted network error code", async () => {
+test("the development uploader exposes only an allowlisted network error code", async () => {
   const { publishArchive } = require(helperPath);
   const bytes = fs.readFileSync(skillPath);
   const grant = {
@@ -547,11 +540,12 @@ test("plugin release versions agree across host manifests and marketplace entrie
 });
 
 
-test("agent discovery distinguishes assigned URLs from confirmed active publication",()=>{
- const skill=fs.readFileSync(skillPath,"utf8");
- assert.match(skill,/isStorefrontPublishedAndActive: true/);
- assert.match(skill,/active publication could not be confirmed/);
- assert.match(skill,/do not claim that the company never published/);
- assert.match(skill,/flag applies to `storefrontUrl`, not `customurl`/);
- assert.doesNotMatch(skill,/customStorefrontUrl/);
+test("agent discovery distinguishes assigned URLs from confirmed active publication", () => {
+  const discovery = fs.readFileSync(path.join(skillDirectory, "discovery.md"), "utf8");
+  assert.match(discovery, /isStorefrontPublishedAndActive/);
+  assert.match(discovery, /Only a true publication flag confirms/);
+  assert.match(discovery, /False means not confirmed/);
+  assert.match(discovery, /does not prove the company never published/);
+  assert.match(discovery, /Custom-domain availability is separate/);
+  assert.doesNotMatch(discovery, /customStorefrontUrl/);
 });

@@ -65,7 +65,7 @@ test('the OpenAI skill routes ZIP requests to its upload procedure without requi
   assert.match(description, /subir.*ZIP/i);
   assert.match(skill, /Publish with \[the upload procedure\]\(upload\.md\)/);
   assert.match(skill, /Do not start or install a local MCP/);
-  assert.match(skill, /Pass only the delegated grant.*publish step on stdin/s);
+  assert.match(skill, /protected publish step on stdin/);
   assert.doesNotMatch(skill, /then call publishStorefrontRelease/);
 });
 
