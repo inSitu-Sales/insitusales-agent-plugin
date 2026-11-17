@@ -16,11 +16,9 @@ The injected SDK automatically initializes notifications after its handshake. `n
 
 Both platforms expose FCM tokens. The native iOS integration connects APNs registration to Firebase Messaging. Private sender credentials belong outside the storefront and native bundles; administrator OAuth is not a buyer session.
 
-## Existing projects and compatibility
+## App boundaries
 
-Legacy template 0.1.0 included an executable SDK under `src/native/sdk/`. For an existing project, preserve its skin customizations while updating the shared provider, observer, public types, and session adapter from the maintained template. Remove the old SDK runtime and import tooling. Do not replace the entire customized project. The app needs an injection-capable build; publishing new web code cannot add that native implementation to an older installed app.
-
-Compatible SDK implementation updates are delivered by the app and do not require replacing the storefront's core. New methods may still require updated consumers and capability checks. Native plugin changes require a store build. OTA delivery is not configured by this integration.
+Native plugin changes require a store build. OTA delivery is not configured by this integration.
 
 The app registry selects the HTTPS storefront URL. The owned shell uses `capacitor://localhost` on iOS or `https://localhost` on Android and loads the storefront in a separate iframe. Preserve exact origin/direct-frame checks. Never replace this boundary with remote `server.url` or unrestricted injection.
 
