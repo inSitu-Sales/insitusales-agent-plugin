@@ -6,8 +6,12 @@ import { execFileSync } from 'node:child_process';
 if (!process.argv[2]?.endsWith('.zip')) throw new Error('Provide an output ZIP path.');
 const output = resolve(process.argv[2]);
 const plugin = new URL('../../plugins/insitu-sales/', import.meta.url);
+// The portable OpenAI manifests live outside the shared plugin folder: Claude's directory
+// only accepts its own manifests there.
+const portable = new URL('../../openai-plugin/', import.meta.url);
+const source = name => new URL(name, ['plugin.json', 'mcp.json'].includes(name) ? portable : plugin);
 for (const name of ['mcp.json', '.codex-mcp.json']) {
-  const { mcpServers } = JSON.parse(await readFile(new URL(name, plugin), 'utf8'));
+  const { mcpServers } = JSON.parse(await readFile(source(name), 'utf8'));
   if (Object.keys(mcpServers).length !== 1 ||
       mcpServers.insitu_sales?.url !== 'https://api.insitusales.com/mcp' ||
       !['http', 'streamable-http'].includes(mcpServers.insitu_sales?.type) ||
@@ -21,7 +25,7 @@ try {
   const staging = join(temporary, 'package');
   await mkdir(staging);
   for (const name of ['plugin.json', 'mcp.json', '.codex-plugin', '.codex-mcp.json', 'skills', 'assets']) {
-    await cp(new URL(name, plugin), join(staging, name), { recursive: true });
+    await cp(source(name), join(staging, name), { recursive: true });
   }
   const archive = join(temporary, 'plugin.zip');
   execFileSync('zip', ['-q', '-r', archive, '.'], { cwd: staging });

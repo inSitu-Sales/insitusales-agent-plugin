@@ -2,7 +2,7 @@
 const { randomUUID } = require("node:crypto");
 const { isAbsolute, basename } = require("node:path");
 const { validate } = require("./workspace.cjs");
-const uploader = require("../../../plugins/insitu-sales/skills/insitu-storefront-authoring/scripts/upload-storefront.js");
+const uploader = require("./upload-storefront.cjs");
 const text = (maxLength) => ({ type: "string", minLength: 1, maxLength });
 const object = (properties) => ({
   type: "object",
@@ -188,7 +188,7 @@ function createPublicationTools(helper = uploader, registry) {
             ...artifact,
             status: "prepared",
             message:
-              "ZIP read and service reachable. Review the artifact and hostname before authorizing publication.",
+              "ZIP read and service reachable. Review the artifact before authorizing publication for the authenticated company.",
           });
         }
         const artifact = prepared.get(args.artifactId);

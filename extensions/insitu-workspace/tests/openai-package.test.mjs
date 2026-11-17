@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -8,11 +8,12 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const plugin = new URL('../../../plugins/insitu-sales/', import.meta.url);
+const portable = new URL('../../../openai-plugin/', import.meta.url);
 const packager = fileURLToPath(new URL('../package-openai.mjs', import.meta.url));
 
 test('OpenAI installations connect through HTTPS without starting a local MCP', async () => {
   for (const file of ['mcp.json', '.codex-mcp.json']) {
-    const config = JSON.parse(await readFile(new URL(file, plugin), 'utf8'));
+    const config = JSON.parse(await readFile(new URL(file, file === 'mcp.json' ? portable : plugin), 'utf8'));
     assert.deepEqual(Object.keys(config.mcpServers), ['insitu_sales']);
     const server = config.mcpServers.insitu_sales;
     assert.equal(server.url, 'https://api.insitusales.com/mcp');
@@ -21,7 +22,7 @@ test('OpenAI installations connect through HTTPS without starting a local MCP', 
   }
 });
 
-test('the OpenAI archive contains skills and the upload helper without command MCP manifests', async t => {
+test('the OpenAI archive contains skills without scripts or command MCP manifests', async t => {
   const root = await mkdtemp(join(tmpdir(), 'insitu-openai-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const archive = join(root, 'plugin.zip');
@@ -32,7 +33,8 @@ test('the OpenAI archive contains skills and the upload helper without command M
   for (const skill of ['insitu-storefront-authoring', 'insitu-workspace']) {
     assert.ok(entries.includes(`skills/${skill}/SKILL.md`));
   }
-  assert.ok(entries.includes('skills/insitu-storefront-authoring/scripts/upload-storefront.js'));
+  assert.ok(entries.includes('skills/insitu-storefront-authoring/upload.md'));
+  assert.ok(entries.every(file => !/\.(c|m)?js$/.test(file)), 'The archive ships no scripts');
   assert.ok(entries.every(file => !/^(server|ui|\.claude-plugin|\.cursor-plugin|node_modules)\//.test(file)));
   const readJson = file => JSON.parse(execFileSync('unzip', ['-p', archive, file], { encoding: 'utf8' }));
   const manifest = readJson('.codex-plugin/plugin.json');
@@ -56,24 +58,22 @@ test('packaging preserves an existing archive instead of overwriting it', async 
   assert.match(result.stderr, /already exists/);
 });
 
-test('the OpenAI skill routes ZIP requests to its script without requiring local MCP tools', async () => {
+test('the OpenAI skill routes ZIP requests to its upload procedure without requiring local MCP tools', async () => {
   const skill = await readFile(new URL('skills/insitu-storefront-authoring/SKILL.md', plugin), 'utf8');
   const description = skill.split('\n').find(line => line.startsWith('description:'));
   assert.match(description, /publish.*ZIP/i);
   assert.match(description, /subir.*ZIP/i);
-  assert.match(skill, /OpenAI installations use the bundled upload script/);
+  assert.match(skill, /Publish with \[the upload procedure\]\(upload\.md\)/);
   assert.match(skill, /Do not start or install a local MCP/);
-  assert.match(skill, /If the selected transport is the script.*--publish/s);
+  assert.match(skill, /Pass only the delegated grant.*publish step on stdin/s);
   assert.doesNotMatch(skill, /then call publishStorefrontRelease/);
 });
 
-test('the packaged script prepares, checks and publishes a ZIP using an artifact grant on stdin', async t => {
+for (const host of ['development server']) {
+test(`the ${host} helper prepares, checks and publishes a ZIP using an artifact grant on stdin`, async t => {
   const root = await mkdtemp(join(tmpdir(), 'insitu-script-publication-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const archive = join(root, 'plugin.zip');
-  execFileSync(process.execPath, [packager, archive]);
-  execFileSync('unzip', ['-q', archive, '-d', join(root, 'installed')]);
-  const helper = join(root, 'installed/skills/insitu-storefront-authoring/scripts/upload-storefront.js');
+  const helper = fileURLToPath(new URL('../server/upload-storefront.cjs', import.meta.url));
   await writeFile(join(root, 'index.html'), '<!doctype html><title>Storefront fixture</title>');
   const zip = join(root, 'storefront.zip');
   execFileSync('zip', ['-q', zip, 'index.html'], { cwd: root });
@@ -132,3 +132,4 @@ test('the packaged script prepares, checks and publishes a ZIP using an artifact
   assert.equal(JSON.parse(changed.stderr).stage, 'authorization');
   assert.doesNotMatch(changed.stdout + changed.stderr, new RegExp(grant.authorization));
 });
+}
