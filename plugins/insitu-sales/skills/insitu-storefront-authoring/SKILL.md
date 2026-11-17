@@ -61,6 +61,10 @@ Keep the template's tested authentication, caching, branding, privacy, and check
 
 Read [buyer experience and asynchronous updates](experience.md) for every creation, remix, or buyer-flow change. Preserve the maintained core's persistent session restoration and background pricing updates. Cart edits must retain the current catalog and dialogs instead of flashing skeletons or reloading unrelated views. Review initial, pending, failed, and restored-session states in the working preview, not only the settled layout.
 
+## Include the buyer notification inbox
+
+Preserve the maintained template's authenticated notification inbox during storefront authoring. Read [buyer notifications](notifications.md) when creating a storefront or changing its header, account navigation, notification UI, or native notification handling. Reuse the shared inbox provider and API adapter; preserve optimistic read actions, silent background updates, and buyer isolation.
+
 ## Support white-label apps
 
 Every storefront must work as a standalone website and be ready for optional embedding in a white-label app. White-label service is optional for each company; compatibility does not establish enrollment or require a native app. Read [browser and app layout](layout.md) for every creation, remix, or layout change, even when the company currently uses only the website. Treat compatibility as part of the generated HTML and CSS rather than relying on the app to repair it. Preserve the shared native observer and session adapter even when the company currently uses only the website.
