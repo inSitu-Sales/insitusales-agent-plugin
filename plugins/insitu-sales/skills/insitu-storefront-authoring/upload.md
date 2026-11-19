@@ -8,7 +8,7 @@ The only endpoint is `https://api.insitusales.com/api/v1/b2b-ecommerce/authorize
 
 A clear request to publish the selected project authorizes preparing and uploading its current build to the verified company storefront. Respect preparation-only requests and requests to wait. If publication intent is missing, ask once using the project name and destination. Renew approval only if the destination or agreed scope changes. Package the reviewed static build rather than its source; exclude credentials and development files. The remote MCP cannot read a local filesystem path.
 
-Confirm file/network execution, curl, checksum tools, and the protected stdin channel before requesting a grant. Check connectivity with the same `curl` executable and execution permissions intended for upload. A successful check does not prove publication readiness. If blocked, request narrowly scoped network execution permission when allowed; stop if policy denies access. Do not bypass restrictions or turn off TLS verification.
+Before publication, read [publication environment and connection diagnostics](connection.md). Confirm file/network execution, curl, checksum tools, and the protected stdin channel before requesting a grant. Check connectivity with the same `curl` executable and execution permissions intended for upload. A successful check does not prove publication readiness. If blocked, request narrowly scoped network execution permission when allowed; stop if policy denies access. Do not bypass restrictions or turn off TLS verification.
 
 Never switch to ChatGPT Sites or another hosting provider, change the registered domain, or modify DNS or certificates to work around publication failures. Alternative hosting needs a separate explicit user request.
 
@@ -26,10 +26,10 @@ These are the `digest` and `size` for `authorizeStorefrontUpload`.
 ## Check the connection
 
 ```text
-curl --silent --show-error --head --max-time 15 --output /dev/null --write-out "%{http_code}" https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases
+curl --silent --show-error --head --connect-timeout 10 --max-time 15 --dump-header - --output /dev/null --write-out "\nHTTP_STATUS=%{http_code}\n" https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases
 ```
 
-Continue only on HTTP 2xx. Any other status or a transport error stops preparation; no upload was attempted.
+Continue only on HTTP 2xx with curl exit code zero. For any other result, automatically follow [connection diagnostics](connection.md) before requesting user intervention. Stop before requesting a grant or uploading until the check succeeds. A permitted diagnostic recheck after a permission or network correction is separate from an upload retry.
 
 ## Authorize the prepared artifact
 
@@ -67,8 +67,8 @@ Report `storefrontUrl` and `customDomain.status` when present. A pending custom 
 
 ## Report failures and deliberate retries
 
-Explain failures immediately in the user's language: what failed, whether upload started or its outcome is unknown, the available service message, the next action, and the support reference. Include HTTP or transport codes as supplemental detail, never as the whole explanation. Do not expose credentials or raw server payloads. If no reference is available, say so and provide the attempt time, registered hostname and artifact digest to inSitu Sales support through the customer's established support channel. Do not invent a contact address.
+Explain failures immediately in the user's language: what failed, whether upload started or its outcome is unknown, the available service message, the next action, and the support reference. Include HTTP or transport codes as supplemental detail, never as the whole explanation. Do not expose credentials or raw server payloads. If no reference is available, say so. Route command-runner permission, proxy, and DNS failures through [connection diagnostics](connection.md). For remote service failures, provide the available reference and attempt details through the customer's established support channel. Do not invent a contact address.
 
-Distinguish local file/network permission failures from remote authorization and service failures. ENOTFOUND and EAI_AGAIN establish a name-resolution failure in that execution context, not proof of denied permissions or a global DNS outage. Use the same execution mechanism and permission context for connection checks and uploads; matching the executable alone is not sufficient. If the available execution context cannot access the network or files, stop with the specific limitation rather than trying unrelated platforms. Request narrow access when the client supports it; do not recommend full access as the default fix. Stop when policy denies access, explain the blocked capability, and offer the supported permission or support step.
+Use [connection diagnostics](connection.md) to distinguish execution restrictions, unresolved connectivity, and remote service failures. A preflight failure does not establish a publication failure or an account-permission problem. Explain the observed limitation and one next action; ordinary MCP queries can remain available.
 
 Report the actual result without treating an unknown outcome as a confirmed failure. A failed or unconfirmed upload does not block another user-requested upload and does not require support clearance. For a deliberate retry, prepare the ZIP again, obtain fresh artifact-scoped authorization, and publish directly in chat. Never reuse a consumed grant or start concurrent uploads. Do not retry automatically. If the problem persists, offer support with the diagnostic reference. Pending publication is not confirmed activation.

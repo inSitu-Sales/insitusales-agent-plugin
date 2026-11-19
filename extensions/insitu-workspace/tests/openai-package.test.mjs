@@ -34,6 +34,11 @@ test('the OpenAI archive contains skills without scripts or command MCP manifest
     assert.ok(entries.includes(`skills/${skill}/SKILL.md`));
   }
   assert.ok(entries.includes('skills/insitu-storefront-authoring/upload.md'));
+  const environmentPath = 'skills/insitu-storefront-authoring/connection.md';
+  assert.ok(entries.includes(environmentPath));
+  assert.equal(execFileSync('unzip', ['-p', archive, environmentPath], { encoding: 'utf8' }),
+    await readFile(new URL(environmentPath, plugin), 'utf8'));
+
   assert.ok(entries.every(file => !/\.(c|m)?js$/.test(file)), 'The archive ships no scripts');
   assert.ok(entries.every(file => !/^(server|ui|\.claude-plugin|\.cursor-plugin|node_modules)\//.test(file)));
   const readJson = file => JSON.parse(execFileSync('unzip', ['-p', archive, file], { encoding: 'utf8' }));

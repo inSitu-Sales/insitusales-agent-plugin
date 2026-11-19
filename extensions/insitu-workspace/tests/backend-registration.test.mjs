@@ -23,6 +23,7 @@ test('backend registration preserves legacy tools, scopes display results, and o
   function make(enabled) {
     const context = {
       process: { env: { MCP_WORKSPACE_EXTENSION_ENABLED: String(enabled) } },
+      McpError: class extends Error {},
       Server: FakeServer, readFileSync: () => '<!doctype html><title>Workspace</title>', join, __dirname: '/mcp',
       createWorkspaceExtension: extension.createWorkspaceExtension,
       jwt: { verify: (token) => ({ company_id: token === 'account-two' ? 2 : 1 }) }, CONFIG: { jwt_encryption: 'test-only' },
@@ -33,7 +34,14 @@ test('backend registration preserves legacy tools, scopes display results, and o
       buildToolRegistry: () => ({ tools: [{ name: 'graphql_query_getAllCustomer' }, { name: 'graphql_mutation_createOrUpdateOrder' }], buildOperation: () => { graphqlCalls++; throw new Error('legacy-dispatch-reached'); } }),
       createApolloClient: () => ({}), toolError: (error) => ({ isError: true, content: [{ type: 'text', text: error.message }] })
     };
-    return vm.runInNewContext(`(${source.slice(start, end).trim()})`, context);
+    const createServer = vm.runInNewContext(`(${source.slice(start, end).trim()})`, context);
+    return options => createServer({
+      ...options,
+      requestContext: {
+        requestId: 'fixture-request', durationMs: () => 0,
+        stage() {}, fail() {}, errorData: () => ({}), run: action => action(),
+      },
+    });
   }
   const disabled = make(false)({ transportAuthToken: 'account-one' });
   assert.equal((await disabled.handlers.get('list')()).tools.length, 2);

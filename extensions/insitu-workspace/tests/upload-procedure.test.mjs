@@ -58,7 +58,7 @@ for (const status of [204, 302, 401, 500]) {
     const requests = [];
     const server = createServer((request, response) => {
       requests.push({ method: request.method, headers: request.headers });
-      response.writeHead(status, { location: '/redirect-target' });
+      response.writeHead(status, { location: '/redirect-target', 'x-request-id': 'fixture-preflight-reference' });
       response.end();
     });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -73,10 +73,38 @@ for (const status of [204, 302, 401, 500]) {
     child.stdin.end();
     const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
     assert.equal(code, 0, stderr);
-    assert.equal(stdout.trim(), String(status));
+    assert.match(stdout, new RegExp(`HTTP_STATUS=${status}\\b`));
+    assert.match(stdout, /x-request-id: fixture-preflight-reference/i);
     assert.equal(requests.length, 1);
     assert.equal(requests[0].method, 'HEAD');
     assert.equal(requests[0].headers.authorization, undefined);
     assert.equal(requests[0].headers['x-storefront-upload-authorization'], undefined);
   });
 }
+
+test('a preflight transport failure retains the curl exit code and reports no HTTP response or reference', async t => {
+  const requests = [];
+  const server = createServer((request, response) => {
+    requests.push({ method: request.method, headers: request.headers });
+    response.destroy();
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const manual = await readFile(procedure, 'utf8');
+  const command = manual.split('## Check the connection\n')[1].match(/```(?:text|sh)\n([\s\S]*?)```/)[1]
+    .replaceAll('https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases', `http://127.0.0.1:${server.address().port}/upload`);
+  const child = spawn('/bin/sh', ['-c', command], { stdio: ['pipe', 'pipe', 'pipe'] });
+  let stdout = '', stderr = '';
+  child.stdout.on('data', data => { stdout += data; });
+  child.stderr.on('data', data => { stderr += data; });
+  child.stdin.end();
+  const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
+  assert.equal(code, 52);
+  assert.match(stderr, /curl: \(52\)/);
+  assert.match(stdout, /HTTP_STATUS=000\b/);
+  assert.doesNotMatch(stdout, /x-request-id/i);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].method, 'HEAD');
+  assert.equal(requests[0].headers.authorization, undefined);
+  assert.equal(requests[0].headers['x-storefront-upload-authorization'], undefined);
+});
