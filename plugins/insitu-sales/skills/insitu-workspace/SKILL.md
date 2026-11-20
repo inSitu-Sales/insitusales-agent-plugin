@@ -9,7 +9,7 @@ Use this skill when the user asks to open inSitu Sales, navigate its home page, 
 
 ## Open and use the home page
 
-Discover `openInSituWorkspace` and call it to open the prompt directory. The remote MCP owns its sidebar and conversation entrypoints. If the host cannot render the remote interface, continue through chat with the available business tools.
+Discover `openInSituPromptDirectory` and call it to open the prompt directory. If an older server advertises only `openInSituWorkspace`, use that compatible name instead; do not call both. The remote MCP owns its sidebar and conversation entrypoints. If the host cannot render the remote interface, continue through chat with the available business tools.
 
 The directory offers prompts for customers, sales orders, invoices, sales insights, and catalog lookup. Open the B2B modal to choose between creating a portal and sending a project ZIP. Each suggestion adds an editable, unsent draft to the native chat input. The user edits and sends it there. Opening or dismissing the modal does not add a prompt. Choosing an option closes the modal and adds its prompt. Selecting a suggestion does not approve or execute its operation.
 

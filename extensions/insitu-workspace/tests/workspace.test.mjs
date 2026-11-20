@@ -4,7 +4,7 @@ import extension from '../server/workspace.cjs';
 
 test('the remote prompt directory exposes one read-only opener', () => {
   const workspace = extension.createWorkspaceExtension('<!doctype html>');
-  assert.deepEqual(workspace.tools.map(tool => tool.name), ['openInSituWorkspace']);
+  assert.deepEqual(workspace.tools.map(tool => tool.name), ['openInSituPromptDirectory']);
   assert.deepEqual(workspace.tool._meta['openai/ui'].entrypoints, [{type:'global'}, {type:'thread'}]);
   assert.equal(workspace.tool.annotations.readOnlyHint, true);
   assert.equal(workspace.call(extension.TOOL_NAME).structuredContent.data, null);
@@ -26,4 +26,16 @@ test('the prompt directory cannot expose arbitrary local files or business paylo
   assert.equal(workspace.call(extension.TOOL_NAME, {projectId:'private'}).isError, true);
   assert.throws(() => workspace.read('file:///etc/passwd'));
   assert.deepEqual(workspace.read(extension.RESOURCE_URI).contents[0]._meta.ui.csp, {connectDomains:[], resourceDomains:[]});
+});
+
+
+test('the former workspace name remains callable without being advertised', () => {
+  const workspace = extension.createWorkspaceExtension('<!doctype html>', {companyId:123});
+  assert.equal(workspace.handles('openInSituWorkspace'), true);
+  const current = workspace.call('openInSituPromptDirectory', {});
+  assert.deepEqual(workspace.call('openInSituWorkspace', {}), {
+    ...current, structuredContent: {...current.structuredContent, kind:'openInSituWorkspace'},
+  });
+  assert.equal(workspace.call('openInSituWorkspace', {view:'invalid'}).isError, true);
+  assert.equal(workspace.tools.some(tool => tool.name === 'openInSituWorkspace'), false);
 });

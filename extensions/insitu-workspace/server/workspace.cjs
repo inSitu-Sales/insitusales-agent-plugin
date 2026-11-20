@@ -1,9 +1,10 @@
 'use strict';
 const BRAND_ICON = require('./workspace-brand.cjs');
 const RESOURCE_URI = 'ui://insitu/prompts/v1.html';
-const TOOL_NAME = 'openInSituWorkspace';
+const TOOL_NAME = 'openInSituPromptDirectory';
+const LEGACY_TOOL_NAME = 'openInSituWorkspace';
 const schemas = {
-  openInSituWorkspace: {
+  [TOOL_NAME]: {
     type: 'object',
     properties: { view: { type: 'string', enum: ['portal'] } },
     additionalProperties: false,
@@ -29,8 +30,8 @@ function validate(schema, value, path = 'input') {
   }
 }
 function validatePayload(name, args) {
-  if (!Object.hasOwn(schemas, name)) throw new Error('Unknown workspace tool');
-  validate(schemas[name], args);
+  if (name !== LEGACY_TOOL_NAME && !Object.hasOwn(schemas, name)) throw new Error('Unknown workspace tool');
+  validate(schemas[name === LEGACY_TOOL_NAME ? TOOL_NAME : name], args);
   return args;
 }
 function createWorkspaceExtension(html, options = {}) {
@@ -38,7 +39,7 @@ function createWorkspaceExtension(html, options = {}) {
   const scope = { companyId: options.companyId == null ? null : String(options.companyId) };
   const resource = { uri: RESOURCE_URI, name: 'insitu-sales-workspace', title: 'inSitu Sales', mimeType: 'text/html;profile=mcp-app' };
   const tool = {
-    name: TOOL_NAME, title: 'inSitu Sales', icons: [BRAND_ICON], description,
+    name: TOOL_NAME, title: 'Open inSitu Sales prompt directory', icons: [BRAND_ICON], description,
     inputSchema: schemas[TOOL_NAME],
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: true },
     _meta: {
@@ -48,7 +49,7 @@ function createWorkspaceExtension(html, options = {}) {
   };
   return {
     tools: [tool], tool, resource,
-    handles: name => name === TOOL_NAME,
+    handles: name => name === TOOL_NAME || name === LEGACY_TOOL_NAME,
     call(name, args = {}) {
       try {
         validatePayload(name, args);

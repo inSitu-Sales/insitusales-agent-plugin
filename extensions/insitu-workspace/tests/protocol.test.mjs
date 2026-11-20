@@ -22,16 +22,20 @@ test('a real MCP client discovers the UI, opens the prompt directory, and reads 
     const list = await client.listTools();
     assert.equal(list.tools.length, 1);
     assert.deepEqual(list.tools.find((tool) => tool.name === extension.TOOL_NAME)._meta['openai/ui'].entrypoints, [{ type: 'global' }, { type: 'thread' }]);
-    const result = await client.callTool({ name: 'openInSituWorkspace', arguments: {} });
+    const result = await client.callTool({ name: 'openInSituPromptDirectory', arguments: {} });
     assert.equal(result.structuredContent.data, null);
     assert.equal(result.structuredContent.scope.companyId, '123');
+    const legacy = await client.callTool({ name: 'openInSituWorkspace', arguments: {} });
+    assert.deepEqual(legacy, {
+      ...result, structuredContent: {...result.structuredContent, kind:'openInSituWorkspace'},
+    });
     const resources = await client.listResources();
     assert.equal(resources.resources[0].uri, extension.RESOURCE_URI);
     const resource = await client.readResource({ uri: extension.RESOURCE_URI });
     assert.equal(resource.contents[0].mimeType, 'text/html;profile=mcp-app');
     assert.match(resource.contents[0].text, /inSitu Sales/);
     assert.doesNotMatch(resource.contents[0].text, /__INSITU_LOGO__|localhost:4317/);
-    const invalid = await client.callTool({ name: 'openInSituWorkspace', arguments: { projectId: 'unavailable' } });
+    const invalid = await client.callTool({ name: 'openInSituPromptDirectory', arguments: { projectId: 'unavailable' } });
     assert.equal(invalid.isError, true);
     await assert.rejects(() => client.readResource({ uri: 'file:///etc/passwd' }));
   } finally { await client.close(); await server.close(); }

@@ -26,7 +26,7 @@ function PromptPreview() {
     host.setRequestHandler(CallToolRequestSchema, async () => { throw new Error('The prompt directory must never call a business tool.'); });
     host.oninitialized = async () => {
       await host.sendToolInput({ arguments: {} });
-      await host.sendToolResult({content:[], structuredContent:{kind:'openInSituWorkspace', data:null}});
+      await host.sendToolResult({content:[], structuredContent:{kind:'openInSituPromptDirectory', data:null}});
     };
     host.connect(new PostMessageTransport(frame.current.contentWindow, frame.current.contentWindow));
     frame.current.src = '/widget';

@@ -43,6 +43,6 @@ Updating only the local source does not change the remote interface or an instal
 
 ## Optional development package
 
-For an isolated package, run `node prepare-dev-plugin.mjs` after building. It includes the same prompt directory and registered account dependency without copying credentials. The local package has no sidebar entrypoint; open it through `openInSituWorkspace` in its conversation.
+For an isolated package, run `node prepare-dev-plugin.mjs` after building. It includes the same prompt directory and registered account dependency without copying credentials. The local package has no sidebar entrypoint; open it through `openInSituPromptDirectory` in its conversation.
 
 Use the host's supported plugin installation flow. `node verify-install.mjs` checks the installed local server and resource; host rendering and remote deployment remain separate acceptance checks.
