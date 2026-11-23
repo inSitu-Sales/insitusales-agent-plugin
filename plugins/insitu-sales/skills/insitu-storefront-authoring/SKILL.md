@@ -27,6 +27,10 @@ The technical sections below apply when their stage is reached. Read conditional
 
 A B2B request sent from a home-page suggestion starts this same authoring or publication workflow. A request to send an existing storefront ZIP goes directly to the publication steps below; do not start a redesign or require a new design brief. Users can also ask directly in chat without opening the interface or naming a skill. The separate `insitu-workspace` skill covers opening and using the home page and conversation panel; consult it when that interface is needed. Its absence does not block authoring through chat and supported preview links.
 
+## Diagnose an existing storefront
+
+For unexpected behavior in an existing storefront, such as missing delivery addresses or unavailable dates, use [settings troubleshooting](../insitu-storefront-troubleshooting/SKILL.md). Diagnose configuration through the read-only getStorefrontSettings tool before proposing a code change. This path does not require a local project or publication workflow.
+
 ## Set up the authoring environment
 
 Remote MCP queries can work from web clients. ZIP publication additionally requires an execution-capable client with file access, curl, outbound HTTPS, and protected stdin. Check these capabilities only for the affected stage; use [publication environment and connection diagnostics](connection.md) before publication and on connection failures. Report confirmed permission restrictions as client-environment limitations, and keep unrelated MCP queries available.

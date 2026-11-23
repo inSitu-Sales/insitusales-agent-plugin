@@ -30,7 +30,7 @@ test('the OpenAI archive contains skills without scripts or command MCP manifest
   const entries = execFileSync('unzip', ['-Z1', archive], { encoding: 'utf8' }).trim().split('\n');
   assert.ok(entries.includes('.codex-plugin/plugin.json'));
   assert.ok(entries.includes('plugin.json'));
-  for (const skill of ['insitu-storefront-authoring', 'insitu-workspace']) {
+  for (const skill of ['insitu-storefront-authoring', 'insitu-storefront-troubleshooting', 'insitu-workspace']) {
     assert.ok(entries.includes(`skills/${skill}/SKILL.md`));
   }
   assert.ok(entries.includes('skills/insitu-storefront-authoring/upload.md'));

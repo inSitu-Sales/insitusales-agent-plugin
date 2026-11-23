@@ -31,6 +31,8 @@ The interface is a prompt directory. Its B2B group offers two suggestions: creat
 
 In OpenAI and Claude, `insitu-storefront-authoring` handles requests to publish an existing storefront ZIP. It prepares the file and checks connectivity with `curl` and a SHA-256 tool, obtains authorization through the remote MCP, and uploads with `curl`, as described in the skill's `upload.md`. No script is bundled. The grant is limited to the exact artifact and registered hostname. Its authorization enters `curl` through protected stdin; the upload does not use the general OAuth token or start a local server. File access, outbound HTTPS, and a protected stdin channel are required.
 
+For existing B2B configuration issues, `insitu-storefront-troubleshooting` uses the read-only `getStorefrontSettings` MCP tool. Current company administrators can read registered settings with English descriptions and resolved values. The skill explains relevant configuration and guides manual changes in the web app; it cannot edit settings. This diagnostic workflow needs no local project, curl, or publication approval. The remote backend must expose the new tool before installed skills can use it.
+
 The Claude plugin uses the remote HTTPS MCP from `.mcp.json`. Its packaged skill contains no scripts. `curl`, a SHA-256 tool, file access, outbound HTTPS, and a protected stdin channel are required for ZIP publication. No local MCP server or project registry is started. Update the installed plugin and reload it before testing. File and network access remain subject to the host's permissions.
 
 ## Local storefront authoring

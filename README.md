@@ -233,7 +233,7 @@ The prompt directory is in [`extensions/insitu-workspace/`](extensions/insitu-wo
 
 ## ChatGPT submission maintenance
 
-`chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. The two storefront authoring actions are available to verified company-user accounts without a company allowlist; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.
+`chatgpt-app-submission.json` contains tool annotations, justifications, and review scenarios. Preserve the existing sales tools when adding capabilities. Storefront context, read-only settings diagnostics, and upload authorization are available to verified company-user accounts without a company allowlist; they do not expose buyer commerce through MCP. Upload authorization does not itself upload or publish content. Its destructive annotation conservatively represents delegated authority to replace a public storefront and matches the server's mutation annotation.
 
 Before submitting an update, compare these entries with authenticated company-user discovery and verify that buyer and mobile accounts retain only the existing sales tools. Review scenarios are acceptance expectations, not evidence that live tests have passed. Updating this file, opening a PR, or installing the plugin does not submit an app update or refresh ChatGPT's imported tool catalog. Confirm the supported submission or connector-refresh process separately. The ChatGPT connector does not install the local skills.
 

@@ -9,7 +9,7 @@ test('the shared plugin folder ships skills without scripts or a local MCP bundl
   t.after(() => rm(temporary, { recursive: true, force: true }));
   const installed = join(temporary, 'plugin');
   await cp(new URL('../../../plugins/insitu-sales/', import.meta.url), installed, { recursive: true });
-  assert.deepEqual(await readdir(join(installed, 'skills')), ['insitu-storefront-authoring', 'insitu-workspace']);
+  assert.deepEqual(await readdir(join(installed, 'skills')), ['insitu-storefront-authoring', 'insitu-storefront-troubleshooting', 'insitu-workspace']);
   await access(join(installed, 'skills/insitu-storefront-authoring/upload.md'));
   await assert.rejects(access(join(installed, 'skills/insitu-storefront-authoring/scripts')), { code: 'ENOENT' });
   await assert.rejects(access(join(installed, 'server')), { code: 'ENOENT' });

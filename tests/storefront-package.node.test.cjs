@@ -202,10 +202,10 @@ test("platform manifests and marketplace version fields agree", () => {
   assert.equal(codex.plugins[0].source.path, "./plugins/insitu-sales");
 });
 
-test("the ChatGPT submission preserves legacy tools and includes only two authoring actions", () => {
+test("the ChatGPT submission preserves legacy tools and includes read-only storefront settings diagnostics", () => {
   const submission = readJson("chatgpt-app-submission.json");
   const names = Object.keys(submission.tools);
-  assert.equal(names.length, 34);
+  assert.equal(names.length, 35);
   assert.equal(
     names.filter((name) => /^graphql_(query|mutation)_/.test(name)).length,
     32,
@@ -224,12 +224,15 @@ test("the ChatGPT submission preserves legacy tools and includes only two author
     openWorldHint: false,
     destructiveHint: false,
   });
+  assert.deepEqual(submission.tools.getStorefrontSettings.annotations, {
+    readOnlyHint: true, openWorldHint: false, destructiveHint: false,
+  });
   assert.deepEqual(submission.tools.authorizeStorefrontUpload.annotations, {
     readOnlyHint: false,
     openWorldHint: false,
     destructiveHint: true,
   });
-  for (const name of ["getStorefrontCompany", "authorizeStorefrontUpload"]) {
+  for (const name of ["getStorefrontCompany", "getStorefrontSettings", "authorizeStorefrontUpload"]) {
     const tool = submission.tools[name];
     for (const key of [
       "read_only_justification",

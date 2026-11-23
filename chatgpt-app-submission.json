@@ -415,6 +415,18 @@
         "open_world_justification": "Changes only private, authenticated inSitu Sales tenant data and does not publish to public internet services.",
         "destructive_justification": "Can overwrite an existing customer when its identifier is supplied."
       }
+    },
+    "getStorefrontSettings": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Reads current registered B2B settings for the authenticated company administrator, with English descriptions and resolved values. It does not edit settings.",
+        "open_world_justification": "Accesses only the authenticated company configuration; it does not visit setting URLs or publish content.",
+        "destructive_justification": "Does not change configuration, create transactions, upload files, or publish a storefront."
+      }
     }
   },
   "test_cases": [
@@ -472,6 +484,14 @@
       "file_attachment_urls": null,
       "tools_triggered": "graphql_mutation_createOrUpdateOrder",
       "expected_output": "Creates the tenant-scoped sales order from the complete header and line items and returns the saved order details.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Diagnose hidden delivery addresses and a three-day minimum delivery lead without editing settings.",
+      "user_prompt": "Why are shipping addresses missing from our B2B and why can customers not choose tomorrow for delivery? Please check the configuration without changing it.",
+      "file_attachment_urls": null,
+      "tools_triggered": "getStorefrontSettings",
+      "expected_output": "Calls getStorefrontSettings without company or profile selectors. Interprets setting_name, description, and stored value, preserving null and empty values. Explains enabled PORTAL_HIDE_SHIPADDRESS and a PORTAL_BLOCK_NEXT_DAYS_DELIVERY_DATE value of 3 only when present; checks shipping-date selection and customer-calendar dependencies. Guides the administrator to the B2B General and Shipping Info web controls if a change is wanted. Does not edit settings, request local execution, rebuild, or publish.",
       "expected_output_url": null
     }
   ],
