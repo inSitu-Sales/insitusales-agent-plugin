@@ -1,6 +1,6 @@
 # Upload procedure
 
-This is the only supported way to publish a storefront ZIP from chat. Every rule in the skill applies: explicit publication approval, an artifact-scoped grant from `authorizeStorefrontUpload`, the fixed endpoint, no automatic retry, and no credentials in command arguments, logs, or files. The steps need `curl` 7.55 or later and a SHA-256 tool. If either is missing, or the client cannot provide a protected standard-input channel separately from command text, explain the missing capability and stop before requesting a grant.
+This procedure publishes a storefront ZIP from chat and follows the publication rules in the skill. It requires `curl` 7.55 or later, a SHA-256 tool, and a protected stdin channel that the command runner can write to and close.
 
 The only endpoint is `https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases`. Never send the grant anywhere else, follow redirects, or turn off TLS verification.
 
@@ -39,7 +39,9 @@ After publication approval and a successful connection check, request artifact-s
 
 Before sending, confirm that the grant's `uploadUrl` equals the endpoint above, `expiresAt` is in the future, and `digest` and `size` equal a fresh digest and size of the ZIP. Otherwise stop: no upload was attempted, and a new preparation and authorization are needed.
 
-Send one multipart request. Start the command below with a client execution API that can provide stdin separately from the command. Supply exactly one header line, `X-Storefront-Upload-Authorization: ` followed by the delegated authorization and a newline, through that protected channel. Never interpolate the authorization into shell text, a here-document, an echo/printf command, a tool transcript, environment configuration, or a file. Disable shell tracing and verbose HTTP output. If the client cannot provide this channel without recording its contents, stop before requesting a grant and report that ZIP publication is unavailable in this client. Do not weaken this requirement to complete an upload.
+Send one multipart request. Use the command runner's protected stdin channel to write exactly one line containing `X-Storefront-Upload-Authorization: ` followed by the grant and a newline. **Close stdin immediately after writing the line.** Use a single write-and-close operation if the runner provides one. Otherwise close its input stream before polling for output. Closing stdin sends EOF and lets `curl --header @-` start the request. A newline alone leaves the input open, and `--max-time` does not limit the wait for EOF.
+
+Keep the grant out of shell text, command history, tool transcripts, environment variables, and files. Disable shell tracing and verbose HTTP output. If writing or closing stdin fails, report which step failed and whether the result is known. Do not start another upload while the first process may still be running.
 
 ```text
 curl --silent --show-error --max-time 120 --request POST \

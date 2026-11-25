@@ -1,20 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 
 const procedure = new URL('../../../plugins/insitu-sales/skills/insitu-storefront-authoring/upload.md', import.meta.url);
 
-test('the documented curl request sends the ZIP and reads authorization from caller stdin', async t => {
+test('the documented curl request sends one ZIP after the caller closes protected stdin', { timeout: 5000 }, async t => {
   const root = await mkdtemp(join(tmpdir(), 'insitu upload '));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const archive = Buffer.from('synthetic ZIP bytes');
   const zip = join(root, 'storefront.zip');
-  await writeFile(zip, archive);
+  await writeFile(join(root, 'index.html'), '<!doctype html><title>Storefront fixture</title>');
+  execFileSync('zip', ['-q', zip, 'index.html'], { cwd: root });
+  const archive = await readFile(zip);
   const digest = createHash('sha256').update(archive).digest('hex');
   const authorization = 'synthetic-artifact-authorization';
   const requests = [];
@@ -34,12 +36,19 @@ test('the documented curl request sends the ZIP and reads authorization from cal
     .replaceAll('<grant.digest>', digest)
     .replaceAll('<ZIP>', zip);
   assert.ok(!command.includes(authorization));
-  const child = spawn('/bin/sh', ['-c', command], { stdio: ['pipe', 'pipe', 'pipe'] });
+  const child = spawn('/bin/sh', ['-c', `exec ${command}`], { stdio: ['pipe', 'pipe', 'pipe'] });
+  t.after(() => {
+    if (child.exitCode === null && child.signalCode === null) child.kill();
+  });
   let stdout = '', stderr = '';
   child.stdout.on('data', data => { stdout += data; });
   child.stderr.on('data', data => { stderr += data; });
   const completed = new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
-  child.stdin.end(`X-Storefront-Upload-Authorization: ${authorization}\n`);
+  child.stdin.write(`X-Storefront-Upload-Authorization: ${authorization}\n`);
+  await delay(150);
+  assert.equal(requests.length, 0, 'a complete header line does not send the POST before EOF');
+  assert.equal(child.exitCode, null);
+  child.stdin.end();
   assert.equal(await completed, 0, stderr);
   assert.equal(requests.length, 1);
   assert.equal(requests[0].headers['x-storefront-upload-authorization'], authorization);

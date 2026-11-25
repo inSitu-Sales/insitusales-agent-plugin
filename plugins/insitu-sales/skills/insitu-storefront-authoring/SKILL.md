@@ -33,7 +33,7 @@ For unexpected behavior in an existing storefront, such as missing delivery addr
 
 ## Set up the authoring environment
 
-Remote MCP queries can work from web clients. ZIP publication additionally requires an execution-capable client with file access, curl, outbound HTTPS, and protected stdin. Check these capabilities only for the affected stage; use [publication environment and connection diagnostics](connection.md) before publication and on connection failures. Report confirmed permission restrictions as client-environment limitations, and keep unrelated MCP queries available.
+Remote MCP queries can work from web clients. ZIP publication requires a client with file access, curl, outbound HTTPS, and a protected stdin channel it can write to and close. Follow the [publication environment and connection checks](connection.md) before publication and when a connection fails. Report confirmed permission restrictions as client-environment limitations. Continue unrelated MCP queries.
 
 Use the connected inSitu MCP tools and their schemas without a separate account-eligibility preflight. The server enforces current administrator permission and hostname ownership when authorizing publication. If an operation is denied, stop that operation and report the service response; do not bypass it with administrator HTTP calls.
 
