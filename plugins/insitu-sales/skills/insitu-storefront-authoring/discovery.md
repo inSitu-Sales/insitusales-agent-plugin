@@ -10,7 +10,7 @@
 | Runtime, transport, and composition | The downloaded template's README, configuration examples, package scripts, shared client, and tests          |
 | Publication transport               | [upload.md](upload.md): `curl` to the fixed inSitu publication endpoint |
 
-For an explicitly selected staging or local environment, obtain its endpoint from the operator; do not derive it from a company hostname or silently switch to production. The MCP address is not the buyer GraphQL endpoint. Never forward administrator OAuth credentials to buyer commerce.
+Use the production buyer GraphQL endpoint for storefront authoring, local previews, and release builds. A localhost preview still uses production. Use a staging or local endpoint only for an explicitly requested test and restore the production configuration before preview handoff or release. Never forward administrator OAuth credentials to buyer commerce.
 
 ## Follow the schema, not a frozen operation list
 
@@ -57,4 +57,4 @@ An absent portal or alias can return null `storefrontUrl` with actionable config
 
 If the discovered tool requires identity selectors, report an outdated tool definition and ask the user to refresh the plugin connection and start a new conversation. Do not invent a hostname to satisfy that schema. If the argument-free call fails, report its specific message and available error code; distinguish denied account status or administrator permission, invalid configuration, and database connection/read failures. Stop company-dependent work after a failed context read or a company mismatch. Never claim the session belongs to the intended company without a successful context response.
 
-Continue the brief and a clearly labeled local design preview when registration is absent. Keep legal routes present with unavailable content when policies cannot be read. Missing registration, currency, or legal content blocks connected commerce or publication readiness, not design work. A missing currency must remain unknown rather than defaulting to an invented monetary configuration. Use the canonical `storefrontUrl` for preview links; `customurl` is an optional customer domain, not a separate deployment.
+When registration is absent, continue approved layout work in the maintained source with the production API configured. Report that a connected preview and publication are blocked. Keep legal routes present with unavailable content when policies cannot be read and leave missing currency unset. Use the hostname from the canonical `storefrontUrl` to configure the local preview. Give the user the verified local server link to review changes.

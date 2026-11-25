@@ -93,7 +93,7 @@ test("the package keeps buyer commerce separate from administrator authorization
   assert.ok(skill.includes("not through MCP tools"));
   assert.match(skill, /Never request(?:\/| or )export the general plugin OAuth token/);
   assert.match(skill, /do not retry automatically/i);
-  assert.match(skill, /protected local channel/);
+  assert.match(skill, /direct header option when protected stdin is unavailable/);
   assert.doesNotMatch(skill, /graphql_(query|mutation)_b2b/);
   assert.doesNotMatch(skill, /testomer|testuser@test\.com|localhost:80/);
 });

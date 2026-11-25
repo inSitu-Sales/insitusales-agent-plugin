@@ -1,5 +1,13 @@
 # Browser and app layout
 
+## Storefront style
+
+Use the maintained skin's visual system as a starting point. Reuse its theme variables, spacing, typography, and shared components. Apply the requested brand changes consistently. Check the existing storefront or supplied reference for design intent and adapt it to the connected source. Review the whole page after a targeted change.
+
+- **Brand and navigation.** Keep the company logo visible in the header. Use the maintained company branding and fallback when a logo is missing. Preserve access to Home and Catalog on desktop and mobile. For signed-in buyers, keep the notification bell and unread count through the [maintained inbox](notifications.md). Preserve existing search, account, and cart access when restyling the header.
+- **Desktop and mobile.** Align the header content with the page grid. Use a compact header and consistent gutters from the skin. At desktop widths, let navigation and the catalog use the available width. At phone widths, adapt the layout and keep every key route reachable. Inspect both sizes for excessive margins, clipped controls, and unexpected empty space.
+- **Verify in the preview.** Open Home and Catalog in a wide desktop viewport and a narrow phone viewport. Check the logo, keyboard focus, image proportions, navigation, and catalog layout. For authenticated features, use an authorized buyer session or state which checks need one. Preserve an intentional visual change when the user requests it explicitly.
+
 ## Compatibility is the default
 
 Generate one responsive storefront for ordinary browsers and optional white-label embedding. A company does not need to own or enable an app for its HTML and CSS to follow these rules. A storefront URL does not establish white-label enrollment. Commerce and manual search must work when the native global is absent; expose native actions only through the maintained adapter and confirmed capabilities.

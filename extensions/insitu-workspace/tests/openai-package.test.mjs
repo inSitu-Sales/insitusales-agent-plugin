@@ -34,6 +34,7 @@ test('the OpenAI archive contains skills without scripts or command MCP manifest
     assert.ok(entries.includes(`skills/${skill}/SKILL.md`));
   }
   assert.ok(entries.includes('skills/insitu-storefront-authoring/upload.md'));
+  assert.ok(entries.includes('skills/insitu-storefront-authoring/project.md'));
   const environmentPath = 'skills/insitu-storefront-authoring/connection.md';
   assert.ok(entries.includes(environmentPath));
   assert.equal(execFileSync('unzip', ['-p', archive, environmentPath], { encoding: 'utf8' }),
@@ -70,7 +71,7 @@ test('the OpenAI skill routes ZIP requests to its upload procedure without requi
   assert.match(description, /subir.*ZIP/i);
   assert.match(skill, /Publish with \[the upload procedure\]\(upload\.md\)/);
   assert.match(skill, /Do not start or install a local MCP/);
-  assert.match(skill, /protected publish step on stdin/);
+  assert.match(skill, /direct header option when protected stdin is unavailable/);
   assert.doesNotMatch(skill, /then call publishStorefrontRelease/);
 });
 

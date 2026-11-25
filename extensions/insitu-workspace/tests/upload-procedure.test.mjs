@@ -10,57 +10,66 @@ import { setTimeout as delay } from 'node:timers/promises';
 
 const procedure = new URL('../../../plugins/insitu-sales/skills/insitu-storefront-authoring/upload.md', import.meta.url);
 
-test('the documented curl request sends one ZIP after the caller closes protected stdin', { timeout: 5000 }, async t => {
-  const root = await mkdtemp(join(tmpdir(), 'insitu upload '));
-  t.after(() => rm(root, { recursive: true, force: true }));
-  const zip = join(root, 'storefront.zip');
-  await writeFile(join(root, 'index.html'), '<!doctype html><title>Storefront fixture</title>');
-  execFileSync('zip', ['-q', zip, 'index.html'], { cwd: root });
-  const archive = await readFile(zip);
-  const digest = createHash('sha256').update(archive).digest('hex');
-  const authorization = 'synthetic-artifact-authorization';
-  const requests = [];
-  const server = createServer(async (request, response) => {
-    const chunks = [];
-    for await (const chunk of request) chunks.push(chunk);
-    requests.push({ headers: request.headers, method: request.method, body: Buffer.concat(chunks) });
-    response.setHeader('x-request-id', 'fixture-request');
-    response.end(JSON.stringify({ status: 'active', hostname: 'fixture.example.com', release: { digest } }));
+for (const protectedStdin of [false, true]) {
+  test(`the documented curl request sends one ZIP via ${protectedStdin ? 'protected stdin' : 'a direct header'}`, { timeout: 5000 }, async t => {
+    const root = await mkdtemp(join(tmpdir(), 'insitu upload '));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    const zip = join(root, 'storefront.zip');
+    await writeFile(join(root, 'index.html'), '<!doctype html><title>Storefront fixture</title>');
+    execFileSync('zip', ['-q', zip, 'index.html'], { cwd: root });
+    const archive = await readFile(zip);
+    const digest = createHash('sha256').update(archive).digest('hex');
+    const authorization = 'synthetic-artifact-authorization';
+    const requests = [];
+    const server = createServer(async (request, response) => {
+      const chunks = [];
+      for await (const chunk of request) chunks.push(chunk);
+      requests.push({ headers: request.headers, method: request.method, body: Buffer.concat(chunks) });
+      response.setHeader('x-request-id', 'fixture-request');
+      response.end(JSON.stringify({ status: 'active', hostname: 'fixture.example.com', release: { digest } }));
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    t.after(() => new Promise(resolve => server.close(resolve)));
+    const manual = await readFile(procedure, 'utf8');
+    const documentedCommand = manual.split('## Publish\n')[1].match(/```(?:text|sh)\n([\s\S]*?)```/)[1]
+      .replaceAll('https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases', `http://127.0.0.1:${server.address().port}/upload`)
+      .replaceAll('<grant.hostname>', 'fixture.example.com')
+      .replaceAll('<grant.digest>', digest)
+      .replaceAll('<ZIP>', zip);
+    const command = protectedStdin
+      ? documentedCommand.replace("--header 'X-Storefront-Upload-Authorization: <grant.authorization>'", '--header @-')
+      : documentedCommand.replace('<grant.authorization>', authorization);
+    assert.equal(command.includes(authorization), !protectedStdin);
+    const child = spawn('/bin/sh', ['-c', `exec ${command}`], {
+      stdio: [protectedStdin ? 'pipe' : 'ignore', 'pipe', 'pipe'],
+    });
+    t.after(() => {
+      if (child.exitCode === null && child.signalCode === null) child.kill();
+    });
+    let stdout = '', stderr = '';
+    child.stdout.on('data', data => { stdout += data; });
+    child.stderr.on('data', data => { stderr += data; });
+    const completed = new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
+    if (protectedStdin) {
+      child.stdin.write(`X-Storefront-Upload-Authorization: ${authorization}\n`);
+      await delay(150);
+      assert.equal(requests.length, 0, 'a complete header line does not send the POST before EOF');
+      assert.equal(child.exitCode, null);
+      child.stdin.end();
+    }
+    assert.equal(await completed, 0, stderr);
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].headers['x-storefront-upload-authorization'], authorization);
+    assert.equal(requests[0].headers.authorization, undefined);
+    assert.equal(requests[0].method, 'POST');
+    assert.ok(requests[0].body.includes(archive));
+    assert.match(requests[0].body.toString(), /name="hostname"\r\n\r\nfixture.example.com/);
+    assert.ok(requests[0].body.includes(Buffer.from(digest)));
+    assert.match(stdout, /fixture-request/);
+    assert.equal(JSON.parse(stdout.slice(stdout.indexOf('{'))).release.digest, digest);
+    assert.ok(!(stdout + stderr).includes(authorization));
   });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  t.after(() => new Promise(resolve => server.close(resolve)));
-  const manual = await readFile(procedure, 'utf8');
-  const command = manual.split('## Publish\n')[1].match(/```(?:text|sh)\n([\s\S]*?)```/)[1]
-    .replaceAll('https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases', `http://127.0.0.1:${server.address().port}/upload`)
-    .replaceAll('<grant.hostname>', 'fixture.example.com')
-    .replaceAll('<grant.digest>', digest)
-    .replaceAll('<ZIP>', zip);
-  assert.ok(!command.includes(authorization));
-  const child = spawn('/bin/sh', ['-c', `exec ${command}`], { stdio: ['pipe', 'pipe', 'pipe'] });
-  t.after(() => {
-    if (child.exitCode === null && child.signalCode === null) child.kill();
-  });
-  let stdout = '', stderr = '';
-  child.stdout.on('data', data => { stdout += data; });
-  child.stderr.on('data', data => { stderr += data; });
-  const completed = new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
-  child.stdin.write(`X-Storefront-Upload-Authorization: ${authorization}\n`);
-  await delay(150);
-  assert.equal(requests.length, 0, 'a complete header line does not send the POST before EOF');
-  assert.equal(child.exitCode, null);
-  child.stdin.end();
-  assert.equal(await completed, 0, stderr);
-  assert.equal(requests.length, 1);
-  assert.equal(requests[0].headers['x-storefront-upload-authorization'], authorization);
-  assert.equal(requests[0].headers.authorization, undefined);
-  assert.equal(requests[0].method, 'POST');
-  assert.ok(requests[0].body.includes(archive));
-  assert.match(requests[0].body.toString(), /name="hostname"\r\n\r\nfixture.example.com/);
-  assert.ok(requests[0].body.includes(Buffer.from(digest)));
-  assert.match(stdout, /fixture-request/);
-  assert.equal(JSON.parse(stdout.slice(stdout.indexOf('{'))).release.digest, digest);
-  assert.ok(!(stdout + stderr).includes(authorization));
-});
+}
 
 for (const status of [204, 302, 401, 500]) {
   test(`the documented connection check returns HTTP ${status} without credentials, upload, redirects or retries`, async t => {

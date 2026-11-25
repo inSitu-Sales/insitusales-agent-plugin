@@ -4,7 +4,7 @@ Use this reference only for ZIP publication. Remote MCP queries can work from we
 
 ## Check the execution capabilities
 
-Before requesting an upload grant, identify the available command runner and its effective file and network permissions. Verify that it can read the ZIP and use curl, a checksum tool, and HTTPS to `api.insitusales.com:443`. Confirm that it can write to protected stdin separately from command text, keep the input out of logs and transcripts, and close stdin to send EOF. If it lacks any of these capabilities, stop before requesting a grant and explain the limitation.
+Before requesting an upload grant, identify the available command runner and its effective file and network permissions. Verify that it can read the ZIP and use curl, a checksum tool, and HTTPS to `api.insitusales.com:443`. The [upload procedure](upload.md) supports a direct header when protected stdin is unavailable. Continue to the HEAD check without troubleshooting stdin.
 
 ZIP publication usually needs Codex desktop, command-line, or IDE execution, or Claude Code, with those capabilities enabled. A web or mobile client with only remote MCP tools can query inSitu but cannot upload a local ZIP through this procedure. Explain the missing capability and preserve the prepared project for an execution-capable client. Continue unrelated MCP queries; do not ask the user to reconnect the plugin to repair command-runner networking.
 
@@ -16,7 +16,7 @@ When the check fails, use the observed tool denial, curl result, and effective h
 
 | Evidence | Conclusion and next action |
 | --- | --- |
-| Command runner, ZIP access, curl, or protected stdin with EOF unavailable | Publication is unavailable in this client or execution context. State the missing capability and how to resume in a capable client. |
+| Command runner, ZIP access, curl, or checksum tool unavailable | Publication is unavailable in this execution context. State the missing capability and how to resume. |
 | Explicit sandbox, network, host, or file denial | An execution permission blocks publication. Use the host's native approval mechanism if policy permits it. |
 | curl 5 | The command runner could not resolve its configured proxy. Check the existing proxy route without exposing or changing credentials. |
 | curl 6, ENOTFOUND, or EAI_AGAIN | Name resolution failed in this execution context. This alone does not prove a permission denial or a global inSitu DNS outage. Check the host policy and permitted DNS/proxy path. |

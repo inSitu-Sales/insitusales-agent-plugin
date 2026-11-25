@@ -90,7 +90,7 @@ Reload plugins or start a new Claude Code session after installing:
 /reload-plugins
 ```
 
-The installed Claude plugin connects to the production MCP over HTTPS. Its storefront skill publishes a ZIP through chat with `curl` and a SHA-256 tool, following the skill's `upload.md`. The plugin bundles no script, because the Claude directory does not accept them. File access, outbound HTTPS, and a protected stdin channel are required. The remote connection owns account sign-in and artifact-scoped upload authorization; no local MCP server or project registry is started.
+The installed Claude plugin connects to the production MCP over HTTPS. Its storefront skill publishes a ZIP through chat with `curl` and a SHA-256 tool, following the skill's `upload.md`. The plugin bundles no script, because the Claude directory does not accept them. File access and outbound HTTPS are required. The remote connection owns account sign-in and artifact-scoped upload authorization; no local MCP server or project registry is started.
 
 Claude Code can also read the shared project MCP config from `.mcp.json`.
 

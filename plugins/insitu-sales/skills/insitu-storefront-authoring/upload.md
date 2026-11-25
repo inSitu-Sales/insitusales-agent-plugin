@@ -1,6 +1,6 @@
 # Upload procedure
 
-This procedure publishes a storefront ZIP from chat and follows the publication rules in the skill. It requires `curl` 7.55 or later, a SHA-256 tool, and a protected stdin channel that the command runner can write to and close.
+This procedure publishes a storefront ZIP from chat. It requires `curl`, a SHA-256 tool, file access, and outbound HTTPS.
 
 The only endpoint is `https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases`. Never send the grant anywhere else, follow redirects, or turn off TLS verification.
 
@@ -8,7 +8,7 @@ The only endpoint is `https://api.insitusales.com/api/v1/b2b-ecommerce/authorize
 
 A clear request to publish the selected project authorizes preparing and uploading its current build to the verified company storefront. Respect preparation-only requests and requests to wait. If publication intent is missing, ask once using the project name and destination. Renew approval only if the destination or agreed scope changes. Package the reviewed static build rather than its source; exclude credentials and development files. The remote MCP cannot read a local filesystem path.
 
-Before publication, read [publication environment and connection diagnostics](connection.md). Confirm file/network execution, curl, checksum tools, and the protected stdin channel before requesting a grant. Check connectivity with the same `curl` executable and execution permissions intended for upload. A successful check does not prove publication readiness. If blocked, request narrowly scoped network execution permission when allowed; stop if policy denies access. Do not bypass restrictions or turn off TLS verification.
+Before publication, read [publication environment and connection diagnostics](connection.md). Confirm file and network execution, curl, and a checksum tool before requesting a grant. Check connectivity with the same `curl` executable and execution permissions intended for upload. A successful check does not prove publication readiness. If blocked, request narrowly scoped network execution permission when allowed. Stop if policy denies access. Do not bypass restrictions or turn off TLS verification.
 
 Never switch to ChatGPT Sites or another hosting provider, change the registered domain, or modify DNS or certificates to work around publication failures. Alternative hosting needs a separate explicit user request.
 
@@ -33,19 +33,19 @@ Continue only on HTTP 2xx with curl exit code zero. For any other result, automa
 
 ## Authorize the prepared artifact
 
-After publication approval and a successful connection check, request artifact-scoped authorization using authorizeStorefrontUpload with only the prepared `digest` and `size`. The server resolves the authenticated company and canonical hostname and enforces administrator permission, ownership, expiration, and artifact matching. Never request or export the general plugin OAuth token. Pass the returned grant unchanged; never ask the user to choose a hostname.
+Choose the header delivery method before requesting the grant. Use protected stdin if the runner can write and close it. Otherwise use the direct header below. The direct option can record the grant in execution logs. A request to publish already authorizes this option. Continue without stdin diagnostics or an extra confirmation.
+
+After publication approval and a successful connection check, call authorizeStorefrontUpload with only the prepared `digest` and `size`. The server resolves the authenticated company and canonical hostname. It verifies administrator permission and ownership and issues a single-use grant for this ZIP that expires in ten minutes. Never request or export the general plugin OAuth token. Pass the returned grant unchanged.
 
 ## Publish
 
 Before sending, confirm that the grant's `uploadUrl` equals the endpoint above, `expiresAt` is in the future, and `digest` and `size` equal a fresh digest and size of the ZIP. Otherwise stop: no upload was attempted, and a new preparation and authorization are needed.
 
-Send one multipart request. Use the command runner's protected stdin channel to write exactly one line containing `X-Storefront-Upload-Authorization: ` followed by the grant and a newline. **Close stdin immediately after writing the line.** Use a single write-and-close operation if the runner provides one. Otherwise close its input stream before polling for output. Closing stdin sends EOF and lets `curl --header @-` start the request. A newline alone leaves the input open, and `--max-time` does not limit the wait for EOF.
-
-Keep the grant out of shell text, command history, tool transcripts, environment variables, and files. Disable shell tracing and verbose HTTP output. If writing or closing stdin fails, report which step failed and whether the result is known. Do not start another upload while the first process may still be running.
+For protected stdin, use `curl` 7.55 or later and replace the header option below with `--header @-`. Write the complete header line and newline, then **close stdin immediately**. Closing sends EOF so curl can start the request.
 
 ```text
 curl --silent --show-error --max-time 120 --request POST \
-  --header @- \
+  --header 'X-Storefront-Upload-Authorization: <grant.authorization>' \
   --form-string "hostname=<grant.hostname>" \
   --form-string "digest=<grant.digest>" \
   --form "archive=@<ZIP>;type=application/zip;filename=storefront.zip" \
@@ -53,7 +53,7 @@ curl --silent --show-error --max-time 120 --request POST \
   https://api.insitusales.com/api/v1/b2b-ecommerce/authorized-releases
 ```
 
-The command contains only non-secret artifact metadata. Quote paths for the active shell and escape any special characters; the placeholders are not executable shell syntax. Do not enable redirect following, automatic retries, or HTTP tracing. Use the same execution permissions for the connection check and upload.
+Send one multipart request. For the direct option, substitute the grant in the header using the runner's argument API or quote it for the active shell. Quote the ZIP path and other values for that shell too. Keep the grant and full command out of chat and saved files. Disable shell tracing and verbose HTTP output. Do not follow redirects or retry automatically. If input or execution fails, report the step and whether the outcome is known. Confirm the first process has stopped before any user-approved retry.
 
 ## Read the result
 

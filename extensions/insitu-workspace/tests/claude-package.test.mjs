@@ -24,8 +24,7 @@ test('Claude ZIP publication uses documented steps without a script, local MCP t
   assert.match(manual, /--header @-/);
   assert.match(manual, /X-Storefront-Upload-Authorization/);
   assert.match(skill, /Do not start or install a local MCP/);
-  assert.match(skill, /prepare step/);
-  assert.match(skill, /connection check/);
-  assert.match(skill, /publish step on stdin/);
+  assert.match(manual, /## Check the connection/);
+  assert.match(manual, /--header 'X-Storefront-Upload-Authorization: <grant.authorization>'/);
   assert.doesNotMatch(skill, /prepareStorefrontRelease|publishStorefrontRelease|registerStorefrontProject|listStorefrontProjects|local MCP transport/);
 });
